@@ -38,8 +38,7 @@ header .meta .live{display:inline-block;width:7px;height:7px;background:#22c55e;
 /* Grids */
 .g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px;margin-bottom:14px}
 .g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px;margin-bottom:14px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
-@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}}
+.g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:14px}
 /* Cards */
 .card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:16px}
 .card h3{font-size:.85rem;color:#94a3b8;margin-bottom:10px;display:flex;align-items:center;gap:7px}
@@ -84,7 +83,7 @@ tr:hover td{background:#111827a0}
 <header>
   <div class="title">
     <h1>Executive Engineering Dashboard</h1>
-    <p>Sprint Status &bull; Velocity &bull; Predictability &bull; QA Metrics &mdash; IMB, DDIND, CLN, CBP, SENG</p>
+    <p>Sprint Status &bull; Velocity &bull; Predictability &bull; QA Metrics &mdash; All Active Projects</p>
   </div>
   <div class="meta">
     <div><span class="live"></span> Live from JIRA</div>
@@ -146,7 +145,7 @@ tr:hover td{background:#111827a0}
   </table></div>
 </div>
 
-<div class="ts">Executive Dashboard &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; Projects: IMB, DDIND, CLN, CBP, SENG</div>
+<div class="ts">Executive Dashboard &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; All Active Projects</div>
 </div>
 
 <script>
@@ -238,9 +237,92 @@ const sprints = {
       {key:'CBP-13372',summary:'CP enablement stuck nodes for many tenants',prio:'P1',status:'To Do',assignee:'Unassigned'},
       {key:'CBP-13376',summary:'PII in logs - All',prio:'P1',status:'Done',assignee:'Simon Leblanc'}
     ]
+  },
+  DA: {
+    name:'Deposit Accounts-2026-Q1-2', dates:'Jan 28 - Feb 11', color:C.teal,
+    total:50, done:30, ip:2, todo:0, blocked:0, cancelled:15,
+    readyForQA:3, qaIP:1,
+    prev:{name:'DA-2025-Q4-S2',total:45,done:28,cancelled:8,ip:5,todo:4,blocked:0},
+    velocity:[28,30], sprintNames:['Q4-S2','Q1-2*'],
+    team:[
+      {name:'Michael Meza',done:8,ip:0},{name:'Abraham Chalita',done:3,ip:2},
+      {name:'Ashley Kim',done:3,ip:1},{name:'Charles Gildart',done:3,ip:0},
+      {name:'Gabriele Giorgi',done:3,ip:0},{name:'Andres Vela',done:2,ip:1},
+      {name:'Luis De Guevara',done:2,ip:0},{name:'Pablo Madrid',done:2,ip:0},
+      {name:'Deepika Reddy',done:2,ip:0}
+    ],
+    criticals:[
+      {key:'DA-1573',summary:'[LFCU] Counter offer product not appearing in app',prio:'P0',status:'Ready for QA',assignee:'Abraham Chalita'},
+      {key:'DA-1572',summary:'LFCU Counteroffers decisioned on wrong applicant',prio:'P0',status:'Ready for QA',assignee:'Abraham Chalita'}
+    ]
+  },
+  RHL: {
+    name:'RHL_FY26_Q1_SP3', dates:'Feb 11 - Feb 25', color:C.rose,
+    total:14, done:0, ip:4, todo:8, blocked:2, cancelled:0,
+    readyForQA:0, qaIP:0,
+    prev:{name:'RHL_FY26_Q1_SP2',total:18,done:10,cancelled:2,ip:4,todo:2,blocked:0},
+    velocity:[10,0], sprintNames:['Q1-SP2','Q1-SP3*'],
+    team:[
+      {name:'Anthony Mazzola',done:0,ip:2},{name:'Ku Kim',done:0,ip:1},
+      {name:'Yanyu Chen',done:0,ip:1},{name:'Aaron Chan',done:0,ip:0}
+    ],
+    criticals:[
+      {key:'RHL-1876',summary:'Auto send co-borrower activation email on submission',prio:'P1',status:'To Do',assignee:'Aaron Chan'},
+      {key:'RHL-1924',summary:'Support 53rd Credit Decisioning - Collect flag from Xactus',prio:'P3',status:'Blocked',assignee:'Aaron Chan'}
+    ]
+  },
+  APEX: {
+    name:'Kanban (No Active Sprint)', dates:'Ongoing', color:C.cyan,
+    total:50, done:0, ip:12, todo:35, blocked:1, cancelled:0,
+    readyForQA:0, qaIP:2,
+    prev:{name:'Recent 50 issues',total:50,done:0,cancelled:0,ip:12,todo:35,blocked:1},
+    velocity:[0,0], sprintNames:['Recent','Current'],
+    team:[
+      {name:'Akash Pai',done:0,ip:3},{name:'Alexander Srey',done:0,ip:3},
+      {name:'Megan McDevitt',done:0,ip:2},{name:'Alejandro Camara',done:0,ip:1},
+      {name:'Kimberly Zurbrick',done:0,ip:1},{name:'Siddhartha Paul',done:0,ip:1}
+    ],
+    criticals:[]
+  },
+  BAI: {
+    name:'Kanban (No Active Sprint)', dates:'Ongoing', color:C.indigo,
+    total:50, done:0, ip:10, todo:38, blocked:0, cancelled:1,
+    readyForQA:0, qaIP:0,
+    prev:{name:'Recent 50 issues',total:50,done:0,cancelled:1,ip:10,todo:38,blocked:0},
+    velocity:[0,0], sprintNames:['Recent','Current'],
+    team:[
+      {name:'Nickolas Scipione',done:0,ip:5},{name:'Alexander Srey',done:0,ip:1}
+    ],
+    criticals:[]
+  },
+  DD: {
+    name:'Kanban (No Active Sprint)', dates:'Ongoing', color:C.lime,
+    total:50, done:0, ip:2, todo:48, blocked:0, cancelled:0,
+    readyForQA:0, qaIP:0,
+    prev:{name:'Recent 50 issues',total:50,done:0,cancelled:0,ip:2,todo:48,blocked:0},
+    velocity:[0,0], sprintNames:['Recent','Current'],
+    team:[
+      {name:'Mukesh Jha',done:0,ip:1},{name:'Ya He',done:0,ip:0},
+      {name:'Jacob Powers',done:0,ip:0},{name:'Alan Castro',done:0,ip:0}
+    ],
+    criticals:[]
+  },
+  QUAL: {
+    name:'QUAL235', dates:'Oct 17 - Oct 30 2025', color:C.sky,
+    total:8, done:1, ip:0, todo:7, blocked:0, cancelled:0,
+    readyForQA:0, qaIP:0,
+    prev:{name:'QUAL234',total:10,done:8,cancelled:0,ip:2,todo:0,blocked:0},
+    velocity:[8,1], sprintNames:['QUAL234','QUAL235*'],
+    team:[
+      {name:'Shrinidhi Patil',done:0,ip:0}
+    ],
+    criticals:[
+      {key:'QUAL-9555',summary:'Dummy2 - Test1',prio:'P0',status:'To Do',assignee:'Shrinidhi Patil'},
+      {key:'QUAL-9556',summary:'Dummy1-Client DA upgrade',prio:'P0',status:'To Do',assignee:'Shrinidhi Patil'}
+    ]
   }
 };
-const projOrder = ['IMB','CLN','SENG','DDIND','CBP'];
+const projOrder = ['IMB','CLN','SENG','DDIND','CBP','DA','RHL','APEX','BAI','DD','QUAL'];
 const projColors = projOrder.map(p=>sprints[p].color);
 
 // ===== EXEC KPIs =====
@@ -255,7 +337,7 @@ const totalQAIP = projOrder.reduce((s,p)=>s+sprints[p].qaIP,0);
 const totalEngineers = projOrder.reduce((s,p)=>s+sprints[p].team.length,0);
 
 const kpis = [
-  {l:'Total Issues',v:totalIssues,c:'b',sub:'Across 5 projects'},
+  {l:'Total Issues',v:totalIssues,c:'b',sub:'Across '+projOrder.length+' projects'},
   {l:'Completed',v:totalDone,c:'g',sub:`${(totalDone/totalIssues*100).toFixed(0)}% of total`},
   {l:'In Progress',v:totalIP,c:'y',sub:'Active work'},
   {l:'Ready for QA',v:totalRFQ,c:'c',sub:'Awaiting testing'},
@@ -272,7 +354,8 @@ projOrder.forEach(pn => {
   const s = sprints[pn];
   const eff = s.total - s.cancelled;
   const comp = eff ? (s.done/eff*100).toFixed(0) : 0;
-  const daysLeft = pn==='IMB'?3:pn==='CLN'?1:pn==='SENG'?2:pn==='DDIND'?1:0;
+  const dlMap={IMB:3,CLN:1,SENG:2,DDIND:1,DA:0,RHL:13,QUAL:0};
+  const daysLeft = dlMap[pn]||0;
   scHtml += `<div class="sprint-card" style="border-top:3px solid ${s.color}">
     <div class="header">
       <div><div class="name" style="color:${s.color}">${pn}</div><div class="dates">${s.name}</div></div>
@@ -439,3 +522,4 @@ document.getElementById('ts').textContent = new Date().toLocaleString();
 </script>
 </body>
 </html>
+
