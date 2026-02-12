@@ -398,11 +398,17 @@ new Chart(document.getElementById('scopeChart'),{type:'bar',data:{
 },options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:10,font:{size:10}}}}}});
 
 // ===== VELOCITY CHART =====
+const velPrev = projOrder.map(p=>sprints[p].velocity[0]);
+const velCurr = projOrder.map(p=>sprints[p].velocity[1]);
+const velAvg = projOrder.map((_,i)=>+((velPrev[i]+velCurr[i])/2).toFixed(1));
+const overallAvg = +(velAvg.reduce((s,v)=>s+v,0)/velAvg.length).toFixed(1);
 new Chart(document.getElementById('velChart'),{type:'bar',data:{
   labels:projOrder,
   datasets:[
-    {label:'Previous Sprint',data:projOrder.map(p=>sprints[p].velocity[0]),backgroundColor:C.blue+'80',borderColor:C.blue,borderWidth:1,borderRadius:4},
-    {label:'Current Sprint (*in progress)',data:projOrder.map(p=>sprints[p].velocity[1]),backgroundColor:C.green+'80',borderColor:C.green,borderWidth:1,borderRadius:4}
+    {label:'Previous Sprint',data:velPrev,backgroundColor:C.blue+'80',borderColor:C.blue,borderWidth:1,borderRadius:4},
+    {label:'Current Sprint (*in progress)',data:velCurr,backgroundColor:C.green+'80',borderColor:C.green,borderWidth:1,borderRadius:4},
+    {type:'line',label:'Avg Velocity',data:velAvg,borderColor:C.yellow,backgroundColor:C.yellow+'40',borderWidth:2,pointBackgroundColor:C.yellow,pointRadius:4,pointHoverRadius:6,tension:0.3,fill:false},
+    {type:'line',label:'Overall Avg ('+overallAvg+')',data:projOrder.map(()=>overallAvg),borderColor:C.rose,borderWidth:2,borderDash:[6,4],pointRadius:0,pointHoverRadius:0,fill:false}
   ]
 },options:{scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:12}}}}});
 
