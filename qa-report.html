@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Report - All Projects | Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1520px;margin:0 auto;padding:24px 28px 48px}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #1e293b}
+header .title h1{font-size:1.75rem;background:linear-gradient(135deg,#f87171,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800}
+header .title p{color:#64748b;font-size:.88rem;margin-top:4px}
+header .meta{text-align:right;font-size:.78rem;color:#475569}
+header .meta .live{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+.home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#94a3b8;font-size:.8rem;font-weight:600;padding:6px 16px;border:1px solid rgba(248,113,113,.2);border-radius:8px;margin-bottom:10px;transition:all .15s}
+.home-btn:hover{background:rgba(248,113,113,.15);color:#fca5a5}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.kpi{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.red::before{background:linear-gradient(90deg,#f87171,#ef4444)}
+.kpi.orange::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.yellow::before{background:linear-gradient(90deg,#fbbf24,#eab308)}
+.kpi.green::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.blue::before{background:linear-gradient(90deg,#38bdf8,#0ea5e9)}
+.kpi .lbl{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:2rem;font-weight:800;margin:4px 0 2px}
+.kpi .sub{font-size:.75rem;color:#475569}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:24px;background:#111827;border-radius:12px;padding:4px;border:1px solid #1e293b}
+.tab-btn{flex:1;padding:12px 16px;border:none;border-radius:10px;background:transparent;color:#64748b;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.tab-btn:hover{color:#94a3b8;background:rgba(248,113,113,.06)}
+.tab-btn.active{background:linear-gradient(135deg,#2a1215,#3b1a1e);color:#fca5a5;box-shadow:0 2px 12px rgba(248,113,113,.15)}
+.tab-panel{display:none;animation:fadeIn .3s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.section{margin:28px 0 16px;display:flex;align-items:center;gap:12px}
+.section h2{font-size:1.15rem;font-weight:700;color:#cbd5e1}
+.section .line{flex:1;height:1px;background:linear-gradient(90deg,#334155,transparent)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:20px}
+.card h3{font-size:.92rem;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 span{font-size:1.1rem}
+canvas{display:block;max-height:320px}
+
+.tbl-wrap{overflow-x:auto;max-height:500px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#0f1420;color:#64748b;text-transform:uppercase;font-size:.72rem;letter-spacing:.5px;padding:10px 14px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:10px 14px;border-bottom:1px solid #111827}
+tr:nth-child(even) td{background:rgba(99,102,241,.02)}
+tr:hover td{background:#111827a0}
+.badge{padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:600;display:inline-block}
+.bp0{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.bp1{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.bp2{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.bp3{background:rgba(148,163,184,.12);color:#94a3b8}
+.bp4{background:rgba(100,116,139,.12);color:#64748b}
+.bs-todo{background:rgba(148,163,184,.15);color:#94a3b8}
+.bs-ip{background:rgba(251,191,36,.15);color:#fbbf24}
+.bs-done{background:rgba(52,211,153,.15);color:#34d399}
+.bs-blocked{background:rgba(248,113,113,.15);color:#f87171}
+.bs-qa{background:rgba(34,211,238,.15);color:#22d3ee}
+
+.alert-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:14px;padding:20px;margin-bottom:20px}
+.alert-box h4{color:#f87171;font-size:1rem;margin-bottom:10px}
+.alert-box ul{color:#94a3b8;font-size:.85rem;list-style:disc;padding-left:20px;line-height:1.8}
+.alert-box ul strong{color:#e2e8f0}
+
+.proj-colors{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.proj-tag{padding:4px 12px;border-radius:6px;font-size:.75rem;font-weight:700}
+
+.footer{text-align:center;color:#334155;font-size:.75rem;margin-top:32px;padding:20px 0;border-top:1px solid #111827}
+@media(max-width:1024px){.kpi-row{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}.tab-bar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<header>
+  <div class="title">
+    <a href="index.html" class="home-btn">&#8592; Home</a>
+    <h1>QA Report &mdash; All Projects</h1>
+    <p>Bug Metrics &bull; Severity Analysis &bull; QA Pipeline &bull; Critical Issues &bull; Trends</p>
+  </div>
+  <div class="meta">
+    <div><span class="live"></span> Live from JIRA</div>
+    <div>Blend Engineering &bull; Q1 2026</div>
+    <div id="ts"></div>
+  </div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi red"><div class="lbl">Open Bugs</div><div class="val" style="color:#f87171">67+</div><div class="sub">Across all projects</div></div>
+  <div class="kpi orange"><div class="lbl">P0/P1 Critical</div><div class="val" style="color:#fb923c">50+</div><div class="sub">Requiring immediate action</div></div>
+  <div class="kpi yellow"><div class="lbl">New Bugs (30d)</div><div class="val" style="color:#fbbf24">50+</div><div class="sub">Created in last 30 days</div></div>
+  <div class="kpi green"><div class="lbl">Resolved (90d)</div><div class="val" style="color:#34d399">50+</div><div class="sub">Fixed in last 90 days</div></div>
+  <div class="kpi blue"><div class="lbl">In QA Pipeline</div><div class="val" style="color:#38bdf8">50+</div><div class="sub">Ready for QA / QA In Progress</div></div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">Bug Overview</button>
+  <button class="tab-btn" onclick="switchTab('critical')">Critical Bugs</button>
+  <button class="tab-btn" onclick="switchTab('pipeline')">QA Pipeline</button>
+  <button class="tab-btn" onclick="switchTab('trends')">Trends</button>
+</div>
+
+<!-- TAB: Bug Overview -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="section"><h2>Open Bugs by Project</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>🐛</span> Open Bugs Distribution</h3><canvas id="openBugsChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>🎯</span> Bug Priority Breakdown (Open)</h3><canvas id="prioChart" width="500" height="300"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span>📊</span> Bug Status Distribution (Open)</h3><canvas id="statusChart" width="500" height="300"></canvas></div>
+    <div class="card"><h3><span>📈</span> Resolved vs New Bugs (Last 30 Days)</h3><canvas id="resolvedNewChart" width="600" height="300"></canvas></div>
+  </div>
+</div>
+
+<!-- TAB: Critical Bugs -->
+<div class="tab-panel" id="tab-critical">
+  <div class="alert-box">
+    <h4>P0/P1 Critical Bug Alert</h4>
+    <ul>
+      <li><strong>SENG</strong> has the highest concentration of P1 bugs (28) — many related to MyPoint integration</li>
+      <li><strong>DD</strong> has 12 open P1 bugs including credential exposure and email sync issues</li>
+      <li><strong>RHL</strong> has 9 P1 bugs across pricing, API, and consent flows</li>
+      <li><strong>DDINDIA</strong> has 1 blocked P1 bug — Doc AI consent for TPR users</li>
+    </ul>
+  </div>
+
+  <div class="section"><h2>P0/P1 Critical Open Bugs by Project</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>🚨</span> P0/P1 Bugs by Project</h3><canvas id="critByProjChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>⚠️</span> Critical Bug Status</h3><canvas id="critStatusChart" width="500" height="300"></canvas></div>
+  </div>
+
+  <div class="section"><h2>Critical Bug Details</h2><div class="line"></div></div>
+  <div class="card">
+    <h3><span>🔴</span> All Open P0/P1 Bugs (Top 30)</h3>
+    <div class="tbl-wrap"><table id="critTable">
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- TAB: QA Pipeline -->
+<div class="tab-panel" id="tab-pipeline">
+  <div class="section"><h2>QA Pipeline Status</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>🧪</span> Issues in QA by Project</h3><canvas id="qaPipeChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>📋</span> QA Pipeline Status Breakdown</h3><canvas id="qaStatusChart" width="500" height="300"></canvas></div>
+  </div>
+
+  <div class="section"><h2>QA Queue Details</h2><div class="line"></div></div>
+  <div class="card">
+    <h3><span>🔍</span> Issues Ready for QA / QA In Progress</h3>
+    <div class="tbl-wrap"><table id="qaTable">
+      <thead><tr><th>Key</th><th>Project</th><th>Type</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- TAB: Trends -->
+<div class="tab-panel" id="tab-trends">
+  <div class="section"><h2>Bug Creation Trends</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>📉</span> New Bugs: Last 30d vs 30-60d (by Project)</h3><canvas id="trendProjChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>🔥</span> Severity Trend: Last 30d vs 30-60d</h3><canvas id="trendSevChart" width="600" height="300"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span>📊</span> Resolution Rate (Last 30 Days)</h3><canvas id="resRateChart" width="600" height="300"></canvas></div>
+    <div class="card">
+      <h3><span>📝</span> Trend Summary</h3>
+      <div style="padding:12px;font-size:.88rem;line-height:1.8;color:#94a3b8">
+        <div style="margin-bottom:12px"><strong style="color:#fb923c">P0/P1 bugs increased</strong> from 13 (30-60d) to 22 (last 30d) &mdash; <span style="color:#f87171">+69% increase</span></div>
+        <div style="margin-bottom:12px"><strong style="color:#e2e8f0">DA</strong> and <strong style="color:#e2e8f0">CLN</strong> saw the highest new bug creation in the last 30 days (18 and 14 respectively)</div>
+        <div style="margin-bottom:12px"><strong style="color:#e2e8f0">RHL</strong> bug creation dropped from 13 to 8 &mdash; <span style="color:#34d399">improvement</span></div>
+        <div style="margin-bottom:12px"><strong style="color:#e2e8f0">SENG</strong> bug creation dropped from 17 to 4 &mdash; <span style="color:#34d399">significant improvement</span></div>
+        <div><strong style="color:#fbbf24">CBP</strong> had 2 new bugs (last 30d) with 22 still in open backlog &mdash; <span style="color:#fbbf24">aging backlog concern</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">QA Report &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; All Active Projects &bull; <span id="footerTs"></span></div>
+</div>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+  setTimeout(()=>window.dispatchEvent(new Event('resize')),50);
+}
+
+const C={red:'#f87171',orange:'#fb923c',yellow:'#fbbf24',green:'#34d399',blue:'#38bdf8',purple:'#a78bfa',cyan:'#22d3ee',rose:'#fb7185',indigo:'#818cf8',teal:'#2dd4bf',sky:'#7dd3fc',lime:'#a3e635'};
+const PC={IMB:C.blue,CLN:C.yellow,SENG:C.purple,DDINDIA:C.cyan,CBP:C.orange,DA:C.teal,RHL:C.rose,APEX:C.sky,BAI:C.indigo,DD:C.green,QUAL:C.lime};
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='#111827';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";Chart.defaults.font.size=12;
+
+// ===== DATA =====
+// Open bugs by project (combined DDINDIA + others)
+const openBugs={APEX:2,BAI:1,CBP:22,CLN:4,DA:9,DD:11,DDINDIA:17,SENG:1,RHL:0,QUAL:0,IMB:0};
+const openByPrio={P0:0,P1:1,P2:8,P3:10,P4:48};
+const openByStatus={'To Do':54,'In Progress':8,'Blocked':5};
+
+// P0/P1 critical open
+const critByProj={SENG:28,DD:12,RHL:9,DDINDIA:1,APEX:0,BAI:0,CBP:0,CLN:0,DA:0,QUAL:0,IMB:0};
+const critByStatus={'To Do':29,'In Progress':11,'Done':10};
+
+// QA pipeline
+const qaPipe={SENG:29,RHL:9,DDINDIA:8,DA:4,CLN:0,CBP:0,APEX:0,BAI:0,DD:0,QUAL:0,IMB:0};
+const qaStatus={'QA In Progress':15,'Ready for QA':35};
+
+// Bugs created last 30d
+const new30={CBP:2,CLN:14,DA:18,DDINDIA:4,RHL:8,SENG:4,APEX:0,BAI:0,DD:0,QUAL:0,IMB:0};
+const new30Prio={P0:9,P1:13,P2:14,P3:11,P4:2};
+// Bugs created 30-60d
+const new60={CLN:4,DA:14,DDINDIA:2,RHL:13,SENG:17,CBP:0,APEX:0,BAI:0,DD:0,QUAL:0,IMB:0};
+const new60Prio={P0:5,P1:8,P2:15,P3:20,P4:2};
+
+// Resolved last 90d
+const resolved={CBP:8,CLN:4,DA:14,DDINDIA:13,RHL:6,SENG:5,APEX:0,BAI:0,DD:0,QUAL:0,IMB:0};
+
+const projOrder=['IMB','CLN','SENG','DDINDIA','CBP','DA','RHL','APEX','BAI','DD','QUAL'];
+const projLabels=projOrder;
+const projClrs=projOrder.map(p=>PC[p]);
+
+// ===== CHARTS =====
+
+// Open bugs by project
+new Chart(document.getElementById('openBugsChart'),{type:'bar',data:{
+  labels:projLabels,datasets:[{label:'Open Bugs',data:projOrder.map(p=>openBugs[p]||0),backgroundColor:projClrs,borderWidth:0,borderRadius:6}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}}}});
+
+// Bug priority (doughnut)
+new Chart(document.getElementById('prioChart'),{type:'doughnut',data:{
+  labels:['P0 Blocking','P1 Critical','P2 Major','P3 Minor','P4 Trivial'],
+  datasets:[{data:[openByPrio.P0,openByPrio.P1,openByPrio.P2,openByPrio.P3,openByPrio.P4],
+    backgroundColor:[C.red+'cc',C.orange+'cc',C.yellow+'cc','#94a3b8aa','#64748baa'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+// Bug status (doughnut)
+new Chart(document.getElementById('statusChart'),{type:'doughnut',data:{
+  labels:['To Do','In Progress','Blocked'],
+  datasets:[{data:[openByStatus['To Do'],openByStatus['In Progress'],openByStatus['Blocked']],
+    backgroundColor:['#94a3b8aa',C.yellow+'cc',C.red+'cc'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+// Resolved vs New
+new Chart(document.getElementById('resolvedNewChart'),{type:'bar',data:{
+  labels:projLabels,
+  datasets:[
+    {label:'New (30d)',data:projOrder.map(p=>new30[p]||0),backgroundColor:C.red+'99',borderRadius:4},
+    {label:'Resolved (90d)',data:projOrder.map(p=>resolved[p]||0),backgroundColor:C.green+'99',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+// Critical by project
+new Chart(document.getElementById('critByProjChart'),{type:'bar',data:{
+  labels:projLabels,datasets:[{label:'P0/P1 Open Bugs',data:projOrder.map(p=>critByProj[p]||0),backgroundColor:projOrder.map(p=>critByProj[p]>10?C.red+'cc':critByProj[p]>0?C.orange+'cc':'#334155'),borderWidth:0,borderRadius:6}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}}}});
+
+// Critical status (doughnut)
+new Chart(document.getElementById('critStatusChart'),{type:'doughnut',data:{
+  labels:['To Do','In Progress','Resolved'],
+  datasets:[{data:[critByStatus['To Do'],critByStatus['In Progress'],critByStatus['Done']],
+    backgroundColor:['#94a3b8aa',C.yellow+'cc',C.green+'cc'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+// QA pipeline by project
+new Chart(document.getElementById('qaPipeChart'),{type:'bar',data:{
+  labels:projLabels,datasets:[{label:'In QA Pipeline',data:projOrder.map(p=>qaPipe[p]||0),backgroundColor:projClrs,borderWidth:0,borderRadius:6}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}}}});
+
+// QA status (doughnut)
+new Chart(document.getElementById('qaStatusChart'),{type:'doughnut',data:{
+  labels:['Ready for QA','QA In Progress'],
+  datasets:[{data:[qaStatus['Ready for QA'],qaStatus['QA In Progress']],
+    backgroundColor:[C.cyan+'cc',C.purple+'cc'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+// Trend: new bugs by project
+new Chart(document.getElementById('trendProjChart'),{type:'bar',data:{
+  labels:projLabels,
+  datasets:[
+    {label:'30-60 days ago',data:projOrder.map(p=>new60[p]||0),backgroundColor:C.blue+'80',borderRadius:4},
+    {label:'Last 30 days',data:projOrder.map(p=>new30[p]||0),backgroundColor:C.orange+'cc',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+// Severity trend
+new Chart(document.getElementById('trendSevChart'),{type:'bar',data:{
+  labels:['P0','P1','P2','P3','P4'],
+  datasets:[
+    {label:'30-60 days ago',data:[new60Prio.P0,new60Prio.P1,new60Prio.P2,new60Prio.P3,new60Prio.P4],backgroundColor:C.blue+'80',borderRadius:4},
+    {label:'Last 30 days',data:[new30Prio.P0,new30Prio.P1,new30Prio.P2,new30Prio.P3,new30Prio.P4],backgroundColor:C.orange+'cc',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+// Resolution rate
+const resProjs=projOrder.filter(p=>(new30[p]||0)>0||(resolved[p]||0)>0);
+const resRate=resProjs.map(p=>{const n=new30[p]||1;const r=resolved[p]||0;return +(r/n*100).toFixed(0);});
+new Chart(document.getElementById('resRateChart'),{type:'bar',data:{
+  labels:resProjs,datasets:[{label:'Resolution Rate %',data:resRate,backgroundColor:resRate.map(v=>v>=100?C.green+'cc':v>=50?C.yellow+'cc':C.red+'cc'),borderWidth:0,borderRadius:6}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}},scales:{x:{beginAtZero:true,grid:{color:'#1e293b30'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}});
+
+// ===== TABLES =====
+function pb(p){if(p.includes('P0'))return'bp0';if(p.includes('P1'))return'bp1';if(p.includes('P2'))return'bp2';if(p.includes('P3'))return'bp3';return'bp4';}
+function sb(s){const l=s.toLowerCase();if(l.includes('done')||l.includes('resolved'))return'bs-done';if(l.includes('progress')||l.includes('review'))return'bs-ip';if(l.includes('block'))return'bs-blocked';if(l.includes('qa'))return'bs-qa';return'bs-todo';}
+
+// Critical bugs table
+const critBugs=[
+  {key:'SENG-2433',proj:'SENG',summary:'[MyPoint] Banker view does not reflect consumer\'s completed application',prio:'P1 (Critical)',status:'To Do',assignee:'Unassigned'},
+  {key:'SENG-2408',proj:'SENG',summary:'[MyPoint] Internal funding via existing accounts fails with error',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-2402',proj:'SENG',summary:'[MyPoint] Lender Terms of Use page loads indefinitely',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-2314',proj:'SENG',summary:'Credit Card AAN not generated after Second Review Declined',prio:'P1 (Critical)',status:'To Do',assignee:'Cesar A. Hernandez'},
+  {key:'SENG-1884',proj:'SENG',summary:'BCU - membergroupcode & membergroupname is null for existing member',prio:'P1 (Critical)',status:'To Do',assignee:'Cameron Williams'},
+  {key:'SENG-1846',proj:'SENG',summary:'Incorrect initial application status for 18yrs old Alabama applicants',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-1840',proj:'SENG',summary:'Unable to create account when in transit if consumer logs out',prio:'P1 (Critical)',status:'To Do',assignee:'Fernando Arana Salas'},
+  {key:'SENG-1837',proj:'SENG',summary:'Canceling out of a decision leaves banker in stale state',prio:'P1 (Critical)',status:'To Do',assignee:'Fernando Arana Salas'},
+  {key:'SENG-1836',proj:'SENG',summary:'Approved app sometimes goes to pending review',prio:'P1 (Critical)',status:'To Do',assignee:'Fernando Arana Salas'},
+  {key:'SENG-1825',proj:'SENG',summary:'Rerunning IDV does not produce proper outcome',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-1821',proj:'SENG',summary:'Disable Update Decision/Update Doc review buttons',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-1809',proj:'SENG',summary:'Inconclusive funding off ramp goes to pending funding',prio:'P1 (Critical)',status:'To Do',assignee:'Omar Aldrich Aparicio'},
+  {key:'DD-4098',proj:'DD',summary:'\'email already in use\' error on borrower sync',prio:'P1 (Critical)',status:'Ready for Dev',assignee:'Unassigned'},
+  {key:'DD-3766',proj:'DD',summary:'prod documents service lending creds in observe logs',prio:'P1 (Critical)',status:'Ready for Dev',assignee:'Ya He'},
+  {key:'RHL-1905',proj:'RHL',summary:'GET home-lending/application API failing on UNKNOWN mortgage type',prio:'P1 (Critical)',status:'Ready for QA',assignee:'Yanyu Chen'},
+  {key:'RHL-1784',proj:'RHL',summary:'Missing sharing applicant consent for non-prefilled co-applicant',prio:'P1 (Critical)',status:'To Do',assignee:'Unassigned'},
+  {key:'RHL-738',proj:'RHL',summary:'TRID Override displaying in Compliance Report',prio:'P1 (Critical)',status:'To Do',assignee:'Unassigned'},
+  {key:'RHL-666',proj:'RHL',summary:'Pricing call failed to Athena w new error',prio:'P1 (Critical)',status:'To Do',assignee:'Victor Hugo Portilla Ortiz'},
+  {key:'DDINDIA-85',proj:'DDINDIA',summary:'Skip asking doc AI consent and running DocsAI for TPR users',prio:'P1 (Critical)',status:'Blocked',assignee:'Harikrishnan Manickam'},
+  {key:'DA-1643',proj:'DA',summary:'HOTFIX: [FMB] eSignature card is displaying incorrect disclosures',prio:'P0 (Blocking)',status:'Dev in Progress',assignee:'Gabriele Giorgi'},
+  {key:'DA-1641',proj:'DA',summary:'HOT FIX: [FMB] Compliance Report is missing consents',prio:'P0 (Blocking)',status:'Dev in Progress',assignee:'Abraham Chalita'},
+  {key:'DA-1640',proj:'DA',summary:'HOTFIX: [MyPoint] View Membership Agreement link navigates to blend.com',prio:'P0 (Blocking)',status:'To Do',assignee:'Unassigned'},
+  {key:'DA-1639',proj:'DA',summary:'HOTFIX: [MyPoint] DA template does not respect the enabled field on DCS',prio:'P0 (Blocking)',status:'To Do',assignee:'Michael Meza'},
+  {key:'CLN-260',proj:'CLN',summary:'TeachersFCU[VL] Vehicle details duplicated on Review & submit',prio:'P1 (Critical)',status:'To Do',assignee:'Eduardo Angeles'},
+  {key:'CLN-248',proj:'CLN',summary:'PLv6: areBorrowersMarried computed field only checks primary',prio:'P1 (Critical)',status:'To Do',assignee:'Unassigned'},
+  {key:'CLN-245',proj:'CLN',summary:'[Auto] TeachersFCU - Payload missing collateral information',prio:'P1 (Critical)',status:'Code Review',assignee:'Kalpana Sharma'},
+];
+
+let critHtml='';
+critBugs.forEach(b=>{
+  critHtml+=`<tr>
+    <td><a href="https://blendlabs.atlassian.net/browse/${b.key}" target="_blank" style="color:${PC[b.proj]||C.blue};text-decoration:none;font-weight:600">${b.key}</a></td>
+    <td style="color:${PC[b.proj]||C.blue};font-weight:600">${b.proj}</td>
+    <td style="white-space:normal;max-width:400px">${b.summary}</td>
+    <td><span class="badge ${pb(b.prio)}">${b.prio.split(' ')[0]}</span></td>
+    <td><span class="badge ${sb(b.status)}">${b.status}</span></td>
+    <td>${b.assignee}</td></tr>`;
+});
+document.querySelector('#critTable tbody').innerHTML=critHtml;
+
+// QA pipeline table (sample)
+const qaItems=[
+  {key:'SENG-2168',proj:'SENG',type:'Story',summary:'CRED-14160: PQ Apps 2 AANs Generated',prio:'P2 (Major)',status:'Ready for QA',assignee:'Cesar A. Hernandez'},
+  {key:'SENG-2147',proj:'SENG',type:'Story',summary:'Frost Bank - Enable customer lookup',prio:'P2 (Major)',status:'Ready for QA',assignee:'Omar Aldrich Aparicio'},
+  {key:'DDINDIA-554',proj:'DDINDIA',type:'Story',summary:'REVIEW_DOCS Specific Visibility Override (Feature Flag) Part 1',prio:'P1 (Critical)',status:'Ready for QA',assignee:'Amod Kumar'},
+  {key:'DDINDIA-551',proj:'DDINDIA',type:'Bug',summary:'Privacy Policy not included in OneSpan/Blend disclosures package',prio:'P2 (Major)',status:'Ready for QA',assignee:'Monilkumar Suthar'},
+  {key:'DA-1573',proj:'DA',type:'Bug',summary:'[LFCU] Counter offer product not appearing in app',prio:'P0 (Blocking)',status:'Ready for QA',assignee:'Abraham Chalita'},
+  {key:'DA-1572',proj:'DA',type:'Bug',summary:'LFCU Counteroffers decisioned on wrong applicant',prio:'P0 (Blocking)',status:'Ready for QA',assignee:'Abraham Chalita'},
+  {key:'RHL-1905',proj:'RHL',type:'Bug',summary:'GET home-lending/application API failing on UNKNOWN mortgage type',prio:'P1 (Critical)',status:'Ready for QA',assignee:'Yanyu Chen'},
+  {key:'RHL-1924',proj:'RHL',type:'Story',summary:'Support 53rd Credit Decisioning - Collect flag from Xactus',prio:'P3 (Minor)',status:'QA In Progress',assignee:'Aaron Chan'},
+];
+
+let qaHtml='';
+qaItems.forEach(q=>{
+  const tBadge=q.type==='Bug'?'bp0':'bp3';
+  qaHtml+=`<tr>
+    <td><a href="https://blendlabs.atlassian.net/browse/${q.key}" target="_blank" style="color:${PC[q.proj]||C.blue};text-decoration:none;font-weight:600">${q.key}</a></td>
+    <td style="color:${PC[q.proj]||C.blue};font-weight:600">${q.proj}</td>
+    <td><span class="badge ${q.type==='Bug'?'bp0':'bp3'}">${q.type}</span></td>
+    <td style="white-space:normal;max-width:350px">${q.summary}</td>
+    <td><span class="badge ${pb(q.prio)}">${q.prio.split(' ')[0]}</span></td>
+    <td><span class="badge ${sb(q.status)}">${q.status}</span></td>
+    <td>${q.assignee}</td></tr>`;
+});
+document.querySelector('#qaTable tbody').innerHTML=qaHtml;
+
+const now=new Date().toLocaleString();
+document.getElementById('ts').textContent=now;
+document.getElementById('footerTs').textContent=now;
+</script>
+</body>
+</html>
