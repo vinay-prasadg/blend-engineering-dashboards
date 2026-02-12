@@ -451,7 +451,8 @@ header p{{color:#94a3b8;font-size:.95rem;margin-top:6px}}
 .grid-3{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}}
 .card{{background:linear-gradient(135deg,#111827 0%,#151c32 100%);border:1px solid rgba(99,102,241,.12);border-radius:14px;padding:22px}}
 .card h3{{font-size:.95rem;font-weight:600;color:#a5b4fc;margin-bottom:16px;display:flex;align-items:center;gap:8px}}
-.chart-wrap{{position:relative;width:100%;height:300px}}
+.chart-wrap{{width:100%;height:300px}}
+canvas{{display:block}}
 .toolbar{{position:sticky;top:0;z-index:20;background:#070b14;padding:16px 0 12px;border-bottom:1px solid rgba(99,102,241,.1);margin-bottom:20px}}
 .search-row{{display:flex;gap:12px;align-items:center;margin-bottom:12px}}
 .search-input{{flex:1;max-width:400px;padding:10px 16px;border-radius:10px;border:1px solid rgba(99,102,241,.2);background:#111827;color:#e2e8f0;font-size:.88rem;outline:none;transition:border-color .2s}}
@@ -545,10 +546,10 @@ h.append('</div>')
 h.append('''<div class="section-title">Distribution Charts</div>
 <div class="grid-2">
   <div class="card"><h3>📊 Epics by Project</h3><div class="chart-wrap"><canvas id="epicChart"></canvas></div></div>
-  <div class="card"><h3>🎯 Epic Priority Distribution</h3><div class="chart-wrap"><canvas id="prioChart"></canvas></div></div>
+  <div class="card"><h3>🎯 Epic Priority Distribution</h3><div class="chart-wrap"><canvas id="prioChart" width="500" height="300"></canvas></div></div>
 </div>
 <div class="grid-2">
-  <div class="card"><h3>📈 Epic Status Breakdown</h3><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
+  <div class="card"><h3>📈 Epic Status Breakdown</h3><div class="chart-wrap"><canvas id="statusChart" width="500" height="300"></canvas></div></div>
   <div class="card"><h3>🐛 Bugs by Project</h3><div class="chart-wrap"><canvas id="bugChart"></canvas></div></div>
 </div>''')
 
