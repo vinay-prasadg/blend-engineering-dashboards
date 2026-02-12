@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Defects Dashboard - Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1520px;margin:0 auto;padding:20px 24px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e293b;flex-wrap:wrap;gap:12px}
+header .title h1{font-size:1.6rem;background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-.3px}
+header .title p{color:#64748b;font-size:.8rem;margin-top:3px}
+header .meta{text-align:right;font-size:.72rem;color:#475569}
+/* Section titles */
+.section{margin:24px 0 12px;display:flex;align-items:center;gap:10px}
+.section h2{font-size:1.05rem;font-weight:700;color:#cbd5e1}
+.section .line{flex:1;height:1px;background:linear-gradient(90deg,#334155,transparent)}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.b::before{background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.kpi.g::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.y::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.kpi.p::before{background:linear-gradient(90deg,#a78bfa,#c084fc)}
+.kpi.r::before{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.kpi.c::before{background:linear-gradient(90deg,#22d3ee,#06b6d4)}
+.kpi.o::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.t::before{background:linear-gradient(90deg,#2dd4bf,#14b8a6)}
+.kpi .lbl{font-size:.65rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:1.5rem;font-weight:800;margin:3px 0 1px}
+.kpi .sub{font-size:.68rem;color:#475569}
+/* Grids */
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+@media(max-width:1200px){.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}}
+/* Cards */
+.card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:16px}
+.card h3{font-size:.85rem;color:#94a3b8;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.card h3 span{font-size:1rem}
+canvas{max-height:280px}
+/* Project sections */
+.proj-section{margin-bottom:24px;border-radius:12px;overflow:hidden;border:1px solid #1e293b;background:linear-gradient(135deg,#111827,#131c30)}
+.proj-header{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:700;font-size:1rem}
+.proj-header .border-left{width:4px;height:24px;border-radius:2px}
+.tbl-wrap{overflow-x:auto;max-height:400px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{background:#0a0e1a;color:#64748b;text-transform:uppercase;font-size:.65rem;letter-spacing:.5px;padding:8px 10px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:7px 10px;border-bottom:1px solid #1e293b;white-space:nowrap}
+td.summary{white-space:normal;max-width:320px}
+tr:hover td{background:#131c3040}
+a.key{color:#38bdf8;text-decoration:none;font-weight:600}
+a.key:hover{text-decoration:underline}
+/* Badges */
+.badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:600;display:inline-block}
+.bg{background:#065f4620;color:#34d399;border:1px solid #34d39930}
+.bb{background:#1e40af20;color:#60a5fa;border:1px solid #60a5fa30}
+.by{background:#92400e20;color:#fbbf24;border:1px solid #fbbf2430}
+.br{background:#be123c20;color:#fb7185;border:1px solid #fb718530}
+.bo{background:#ea580c20;color:#fb923c;border:1px solid #fb923c30}
+/* Priority badges */
+.p0{background:#dc262620;color:#f87171;border:1px solid #f8717130}
+.p1{background:#ea580c20;color:#fb923c;border:1px solid #fb923c30}
+.p2{background:#92400e20;color:#fbbf24;border:1px solid #fbbf2430}
+.p3{background:#1e40af20;color:#60a5fa;border:1px solid #60a5fa30}
+.p4{background:#0f766e20;color:#2dd4bf;border:1px solid #2dd4bf30}
+/* Footer */
+footer{text-align:center;color:#334155;font-size:.7rem;padding:20px 0;margin-top:24px;border-top:1px solid #1e293b}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<header>
+  <div class="title">
+    <h1>Production Defects Dashboard - Blend Engineering</h1>
+    <p>DDIND • CLN • SENG • IMB • CBP — Production Issues Tracker</p>
+  </div>
+  <div class="meta">
+    <div>Data sourced from JIRA</div>
+    <div id="ts"></div>
+  </div>
+</header>
+
+<!-- ===== TOP KPI ROW ===== -->
+<div class="kpi-row">
+  <div class="kpi b"><div class="lbl">Total Defects</div><div class="val vb">218</div><div class="sub">across all 5 projects</div></div>
+  <div class="kpi bb"><div class="lbl">Open</div><div class="val">82</div><div class="sub">to be resolved</div></div>
+  <div class="kpi g"><div class="lbl">Resolved</div><div class="val vg">118</div><div class="sub">completed</div></div>
+  <div class="kpi r"><div class="lbl">Cancelled</div><div class="val vr">18</div><div class="sub">closed without fix</div></div>
+  <div class="kpi o"><div class="lbl">P0/P1 Critical</div><div class="val vo">35</div><div class="sub">high priority</div></div>
+  <div class="kpi c"><div class="lbl">MTTR (avg)</div><div class="val vc">~5 days</div><div class="sub">mean time to resolve</div></div>
+  <div class="kpi p"><div class="lbl">Projects Tracked</div><div class="val vp">5</div><div class="sub">DDIND, CLN, SENG, IMB, CBP</div></div>
+  <div class="kpi t"><div class="lbl">Resolution Rate</div><div class="val vt">54%</div><div class="sub">defect resolution rate</div></div>
+</div>
+
+<!-- ===== CROSS-PROJECT CHARTS ===== -->
+<div class="section"><h2>Cross-Project Charts</h2><div class="line"></div></div>
+<div class="g2">
+  <div class="card"><h3><span>📊</span> Defects by Project</h3><canvas id="byProjectChart"></canvas></div>
+  <div class="card"><h3><span>🍩</span> Overall Status Distribution</h3><canvas id="statusChart"></canvas></div>
+</div>
+<div class="g2">
+  <div class="card"><h3><span>📈</span> Priority Distribution</h3><canvas id="priorityChart"></canvas></div>
+  <div class="card"><h3><span>📉</span> Defect Trend (Last 8 Weeks)</h3><canvas id="trendChart"></canvas></div>
+</div>
+
+<!-- ===== RESOLUTION METRICS ===== -->
+<div class="section"><h2>Resolution Metrics</h2><div class="line"></div></div>
+<div class="g3">
+  <div class="card"><h3><span>✓</span> Resolution Rate by Project (%)</h3><canvas id="resolutionChart"></canvas></div>
+  <div class="card"><h3><span>📡</span> Defect Age (Open Issues)</h3><canvas id="ageChart"></canvas></div>
+  <div class="card"><h3><span>🏷</span> Top Defect Categories</h3><canvas id="categoriesChart"></canvas></div>
+</div>
+
+<!-- ===== PRODUCTION DEFECTS TABLE ===== -->
+<div class="section"><h2>Production Defects Table</h2><div class="line"></div></div>
+
+<!-- DDIND -->
+<div class="proj-section">
+  <div class="proj-header"><div class="border-left" style="background:#34d399"></div>DDIND Defects</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/DDINDIA-589" target="_blank">DDINDIA-589</a></td><td class="summary">Borrower Unable to Sign Disclosure - Package in Draft Status</td><td><span class="badge p3">P3</span></td><td><span class="badge bg">Done</span></td><td>Kumar Utkarsh</td><td>Feb 6, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/DDINDIA-585" target="_blank">DDINDIA-585</a></td><td class="summary">Truist - Duplicate Initial Disclosures showing after outage</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Kumar Utkarsh</td><td>Feb 4, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/DDINDIA-572" target="_blank">DDINDIA-572</a></td><td class="summary">CrossCountry - 2 users unable to send disclosures to Blend</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Gaurav Kumar</td><td>Jan 30, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/DDINDIA-564" target="_blank">DDINDIA-564</a></td><td class="summary">GET Tax Transcript API call 500 error (USBank)</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Kumar Utkarsh</td><td>Jan 27, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/DDINDIA-554" target="_blank">DDINDIA-554</a></td><td class="summary">REVIEW_DOCS Visibility Override (Feature Flag) Part 1</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Ready for QA</span></td><td>Amod Kumar</td><td>Jan 23, 2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CLN -->
+<div class="proj-section">
+  <div class="proj-header"><div class="border-left" style="background:#fbbf24"></div>CLN Defects</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-248" target="_blank">CLN-248</a></td><td class="summary">PLv6: areBorrowersMarried computed field only checks primary</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Feb 10, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-245" target="_blank">CLN-245</a></td><td class="summary">TeachersFCU Auto - Missing collateral info for RV/Motorcycle/Boat</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Feb 10, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-215" target="_blank">CLN-215</a></td><td class="summary">TeachersFCU CC/VL stuck on same email co-applicant</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Dev in Progress</span></td><td>Suyog Bhatia</td><td>Jan 30, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-214" target="_blank">CLN-214</a></td><td class="summary">TeachersFCU CC - Error with soft credit pull in BT</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Eduardo Angeles</td><td>Jan 30, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-209" target="_blank">CLN-209</a></td><td class="summary">ALL - When prove enabled, DOB validation missing</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Jan 27, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-205" target="_blank">CLN-205</a></td><td class="summary">CC Banker not fast forwarded to decision summary</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Suyog Bhatia</td><td>Jan 26, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-201" target="_blank">CLN-201</a></td><td class="summary">BMO PL - Joint Income Handling mismatch in DMS</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Unassigned</td><td>Jan 22, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-199" target="_blank">CLN-199</a></td><td class="summary">CC Application from Banker goes to Authorized Users</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Mahesh Shetty</td><td>Jan 22, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-197" target="_blank">CLN-197</a></td><td class="summary">CC v5 Authorized Users appearing twice</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Mahesh Shetty</td><td>Jan 22, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-195" target="_blank">CLN-195</a></td><td class="summary">CC Validation error from Additional Income via Deep Link</td><td><span class="badge p0">P0</span></td><td><span class="badge bg">Done</span></td><td>Unassigned</td><td>Jan 16, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-185" target="_blank">CLN-185</a></td><td class="summary">PL Debt consolidation not appearing when config enabled</td><td><span class="badge p1">P1</span></td><td><span class="badge bo">Blocked</span></td><td>Suyog Bhatia</td><td>Jan 16, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-136" target="_blank">CLN-136</a></td><td class="summary">CC unable to navigate to balance transfer/cross sell</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Simon Getahun</td><td>Jan 7, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-135" target="_blank">CLN-135</a></td><td class="summary">AL - Duplicate Vehicle Condition field</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Simon Getahun</td><td>Jan 7, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-131" target="_blank">CLN-131</a></td><td class="summary">TeachersFCU VL/PL - Don't display APR if not returned</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Sathish Krishnan</td><td>Dec 30, 2025</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CLN-128" target="_blank">CLN-128</a></td><td class="summary">TeachersFCU CC/VL - I'm already a member button incorrect</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Simon Getahun</td><td>Dec 30, 2025</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SENG -->
+<div class="proj-section">
+  <div class="proj-header"><div class="border-left" style="background:#a78bfa"></div>SENG Defects</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2408" target="_blank">SENG-2408</a></td><td class="summary">MyPoint - Internal funding via existing accounts fails</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Feb 10, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2402" target="_blank">SENG-2402</a></td><td class="summary">MyPoint - Lender Terms page loads indefinitely</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Feb 10, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2319" target="_blank">SENG-2319</a></td><td class="summary">MyPoint - Citizenship data not saved for Beneficiary</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Shivakumar Y</td><td>Feb 9, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2314" target="_blank">SENG-2314</a></td><td class="summary">Citizens CC - AAN not generated after Second Review Declined</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Cesar A. Hernandez</td><td>Feb 5, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2311" target="_blank">SENG-2311</a></td><td class="summary">BOKF - Qualifile shows approved when IDV denied</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Ready for QA</span></td><td>Omar A. Aparicio</td><td>Feb 5, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2268" target="_blank">SENG-2268</a></td><td class="summary">Park National Bank - Declined App showing wrong screen</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Iván Álvarez</td><td>Feb 2, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2244" target="_blank">SENG-2244</a></td><td class="summary">DCCU CC-DA cross sell - Email/Phone not prefilled</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Ready for QA</span></td><td>Aparna Krishnappa</td><td>Jan 30, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2234" target="_blank">SENG-2234</a></td><td class="summary">Internal funding - CD under minimum funding amt</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Zach Seprish</td><td>Jan 29, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2219" target="_blank">SENG-2219</a></td><td class="summary">DCCU DA - user stays on co-applicant details page</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Ready for QA</span></td><td>Aparna Krishnappa</td><td>Jan 28, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2212" target="_blank">SENG-2212</a></td><td class="summary">LFCU - Essential Checking not updating to core</td><td><span class="badge p1">P1</span></td><td><span class="badge by">Ready for QA</span></td><td>Omar A. Aparicio</td><td>Jan 28, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2177" target="_blank">SENG-2177</a></td><td class="summary">LFCU - Auto Sentry Error for VehicleYear</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Iván Álvarez</td><td>Jan 22, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2173" target="_blank">SENG-2173</a></td><td class="summary">NFCU Legal Ops - System expects docs for each member</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Iván Álvarez</td><td>Jan 21, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/SENG-2167" target="_blank">SENG-2167</a></td><td class="summary">Citizens One-Click - Incorrect Indicators in API Response</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Fernando Arana Salas</td><td>Jan 21, 2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- IMB -->
+<div class="proj-section">
+  <div class="proj-header"><div class="border-left" style="background:#38bdf8"></div>IMB Defects</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-191" target="_blank">IM-191</a></td><td class="summary">Save button not working when swapping borrower</td><td><span class="badge p3">P3</span></td><td><span class="badge bb">To Do</span></td><td>Siddhartha Paul</td><td>Feb 10, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-190" target="_blank">IM-190</a></td><td class="summary">Swap borrower not disabled when TRID triggered</td><td><span class="badge p3">P3</span></td><td><span class="badge bb">To Do</span></td><td>Siddhartha Paul</td><td>Feb 9, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-189" target="_blank">IM-189</a></td><td class="summary">LO Mobile App not prompting push notifications</td><td><span class="badge p3">P3</span></td><td><span class="badge bb">To Do</span></td><td>Akash Pai</td><td>Jan 20, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-187" target="_blank">IM-187</a></td><td class="summary">Export fails when editing fields on Blend side</td><td><span class="badge p3">P3</span></td><td><span class="badge bb">To Do</span></td><td>Ajay Shekar</td><td>Feb 3, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-186" target="_blank">IM-186</a></td><td class="summary">Encompass ID changes to loan ID after export</td><td><span class="badge p2">P2</span></td><td><span class="badge bb">To Do</span></td><td>Ajay Shekar</td><td>Feb 3, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-183" target="_blank">IM-183</a></td><td class="summary">Encompass 2-way sync field mapping mismatch Pt 3</td><td><span class="badge p3">P3</span></td><td><span class="badge bg">Done</span></td><td>Siddhartha Paul</td><td>Jan 27, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-163" target="_blank">IM-163</a></td><td class="summary">Fix 400 errors from Desktop Originator for DU tenants</td><td><span class="badge p3">P3</span></td><td><span class="badge by">Ready for QA</span></td><td>Akash Pai</td><td>Jan 11, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-162" target="_blank">IM-162</a></td><td class="summary">Mobile disclosure tracker not accurate (USBank)</td><td><span class="badge p2">P2</span></td><td><span class="badge by">Dev in Progress</span></td><td>Melissa Cohen</td><td>Nov 22, 2024</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-124" target="_blank">IM-124</a></td><td class="summary">Disclosure emails from old organization email</td><td><span class="badge p2">P2</span></td><td><span class="badge by">Dev in Progress</span></td><td>Siddhant Vyas</td><td>Dec 23, 2025</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/IM-84" target="_blank">IM-84</a></td><td class="summary">DO credentials removed after adding in user profile</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Siddhartha Paul</td><td>Dec 2, 2025</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CBP -->
+<div class="proj-section">
+  <div class="proj-header"><div class="border-left" style="background:#fb923c"></div>CBP Defects</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Created</th></tr></thead>
+      <tbody>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13412" target="_blank">CBP-13412</a></td><td class="summary">Beta hotfix blocking Rapid go-live testing FifthThird</td><td><span class="badge p3">P3</span></td><td><span class="badge bg">Done</span></td><td>George Su</td><td>Feb 9, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13385" target="_blank">CBP-13385</a></td><td class="summary">Beta release visual regression in app-page DA</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Simon Leblanc</td><td>Feb 5, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13376" target="_blank">CBP-13376</a></td><td class="summary">PII in logs - All</td><td><span class="badge p1">P1</span></td><td><span class="badge bg">Done</span></td><td>Simon Leblanc</td><td>Feb 3, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13372" target="_blank">CBP-13372</a></td><td class="summary">CP enablement stuck nodes for many tenants</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Feb 2, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13362" target="_blank">CBP-13362</a></td><td class="summary">Caliper failures in prod</td><td><span class="badge p2">P2</span></td><td><span class="badge bg">Done</span></td><td>Shimrit Yacobi</td><td>Jan 28, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13354" target="_blank">CBP-13354</a></td><td class="summary">configurable-products 500 rate too high in prod</td><td><span class="badge p3">P3</span></td><td><span class="badge bg">Done</span></td><td>Shreshth Malik</td><td>Jan 26, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13338" target="_blank">CBP-13338</a></td><td class="summary">BOKF - BDAO is down in Production (Sev2)</td><td><span class="badge p0">P0</span></td><td><span class="badge bg">Done</span></td><td>George Su</td><td>Jan 16, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13333" target="_blank">CBP-13333</a></td><td class="summary">Document upload screen blanks out</td><td><span class="badge p1">P1</span></td><td><span class="badge bb">To Do</span></td><td>Unassigned</td><td>Jan 15, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13319" target="_blank">CBP-13319</a></td><td class="summary">sev1-pfnd-7293 impact and alerts</td><td><span class="badge p0">P0</span></td><td><span class="badge bg">Done</span></td><td>George Su</td><td>Jan 13, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13269" target="_blank">CBP-13269</a></td><td class="summary">NFCU-Legal BONS event isn't firing</td><td><span class="badge p0">P0</span></td><td><span class="badge bg">Done</span></td><td>Alison Kerska</td><td>Jan 13, 2026</td></tr>
+        <tr><td><a class="key" href="https://blendlabs.atlassian.net/browse/CBP-13262" target="_blank">CBP-13262</a></td><td class="summary">Paged for 500s in prod during the night</td><td><span class="badge p3">P3</span></td><td><span class="badge bg">Done</span></td><td>Simon Leblanc</td><td>Jan 12, 2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Production Defects Dashboard • Data sourced from JIRA (blendlabs.atlassian.net) • Generated: <span id="footerTs"></span></footer>
+</div>
+
+<script>
+(function(){
+  const ts = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  document.getElementById('ts').textContent = ts;
+  document.getElementById('footerTs').textContent = ts;
+
+  const gridColor = 'rgba(30, 41, 59, 0.6)';
+  const textColor = '#94a3b8';
+  const font = { family: "'Segoe UI', system-ui", size: 11 };
+  const colors = {
+    blue: '#38bdf8', green: '#34d399', yellow: '#fbbf24', purple: '#a78bfa',
+    cyan: '#22d3ee', rose: '#fb7185', orange: '#fb923c', red: '#f87171', teal: '#2dd4bf'
+  };
+
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+  Chart.defaults.font = font;
+
+  // 1. Defects by Project - Horizontal bar
+  new Chart(document.getElementById('byProjectChart'), {
+    type: 'bar',
+    data: {
+      labels: ['DDIND', 'CLN', 'SENG', 'IMB', 'CBP'],
+      datasets: [
+        { label: 'Resolved', data: [20, 18, 22, 16, 37], backgroundColor: colors.green },
+        { label: 'In Progress', data: [1, 3, 2, 2, 3], backgroundColor: colors.yellow },
+        { label: 'Open', data: [5, 19, 22, 8, 8], backgroundColor: colors.blue },
+        { label: 'Cancelled', data: [0, 10, 4, 2, 2], backgroundColor: colors.rose }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { stacked: true, grid: { color: gridColor } },
+        y: { stacked: true, grid: { display: false } }
+      }
+    }
+  });
+
+  // 2. Overall Status Distribution - Doughnut
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Resolved', 'Open/To Do', 'In Progress', 'Cancelled', 'Blocked'],
+      datasets: [{
+        data: [113, 62, 11, 18, 4],
+        backgroundColor: [colors.green, colors.blue, colors.yellow, colors.rose, colors.orange],
+        borderWidth: 2,
+        borderColor: '#111827'
+      }]
+    },
+    options: {
+      plugins: { legend: { position: 'right' } },
+      cutout: '55%'
+    }
+  });
+
+  // 3. Priority Distribution - Stacked bar
+  new Chart(document.getElementById('priorityChart'), {
+    type: 'bar',
+    data: {
+      labels: ['DDIND', 'CLN', 'SENG', 'IMB', 'CBP'],
+      datasets: [
+        { label: 'P0', data: [0, 2, 0, 0, 3], backgroundColor: colors.red },
+        { label: 'P1', data: [1, 15, 8, 1, 3], backgroundColor: colors.orange },
+        { label: 'P2', data: [4, 9, 18, 7, 7], backgroundColor: colors.yellow },
+        { label: 'P3', data: [21, 20, 20, 20, 33], backgroundColor: colors.blue },
+        { label: 'P4', data: [0, 4, 1, 0, 1], backgroundColor: colors.teal }
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { stacked: true, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  // 4. Defect Trend - Line
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: ['Dec W1', 'Dec W2', 'Dec W3', 'Dec W4', 'Jan W1', 'Jan W2', 'Jan W3', 'Jan W4'],
+      datasets: [
+        { label: 'DDIND', data: [2, 1, 0, 1, 3, 2, 3, 3], borderColor: colors.green, fill: false, tension: 0.3 },
+        { label: 'CLN', data: [4, 3, 5, 4, 6, 7, 5, 8], borderColor: colors.yellow, fill: false, tension: 0.3 },
+        { label: 'SENG', data: [3, 4, 3, 5, 4, 6, 5, 7], borderColor: colors.purple, fill: false, tension: 0.3 },
+        { label: 'IMB', data: [2, 2, 3, 1, 2, 3, 2, 4], borderColor: colors.blue, fill: false, tension: 0.3 },
+        { label: 'CBP', data: [5, 3, 4, 3, 6, 5, 7, 4], borderColor: colors.orange, fill: false, tension: 0.3 }
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { grid: { color: gridColor } },
+        y: { grid: { color: gridColor } }
+      }
+    }
+  });
+
+  // 5. Resolution Rate by Project
+  new Chart(document.getElementById('resolutionChart'), {
+    type: 'bar',
+    data: {
+      labels: ['DDIND', 'CLN', 'SENG', 'IMB', 'CBP'],
+      datasets: [{
+        label: 'Resolution Rate %',
+        data: [77, 36, 44, 57, 74],
+        backgroundColor: [colors.green, colors.yellow, colors.purple, colors.blue, colors.orange]
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 100, grid: { color: gridColor } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 6. Defect Age - Radar
+  new Chart(document.getElementById('ageChart'), {
+    type: 'radar',
+    data: {
+      labels: ['<7 days', '7-14 days', '14-30 days', '30-60 days', '>60 days'],
+      datasets: [
+        { label: 'DDIND', data: [1, 1, 1, 1, 1], borderColor: colors.green, backgroundColor: colors.green + '20', fill: true },
+        { label: 'CLN', data: [8, 4, 3, 2, 2], borderColor: colors.yellow, backgroundColor: colors.yellow + '20', fill: true },
+        { label: 'SENG', data: [7, 5, 4, 3, 3], borderColor: colors.purple, backgroundColor: colors.purple + '20', fill: true },
+        { label: 'IMB', data: [4, 2, 1, 0, 1], borderColor: colors.blue, backgroundColor: colors.blue + '20', fill: true },
+        { label: 'CBP', data: [3, 2, 1, 1, 1], borderColor: colors.orange, backgroundColor: colors.orange + '20', fill: true }
+      ]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        r: { grid: { color: gridColor }, angleLines: { color: gridColor } }
+      }
+    }
+  });
+
+  // 7. Top Defect Categories - Horizontal bar
+  new Chart(document.getElementById('categoriesChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Disclosure/Document Issues', 'Integration/API Errors', 'UI/UX Bugs', 'Credit Card Workflow', 'Data Mapping', 'Mobile Issues', 'Configuration Issues', 'Performance/500 Errors'],
+      datasets: [{
+        label: 'Count',
+        data: [28, 24, 22, 18, 15, 8, 12, 15],
+        backgroundColor: [colors.purple, colors.rose, colors.cyan, colors.yellow, colors.teal, colors.blue, colors.orange, colors.red]
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

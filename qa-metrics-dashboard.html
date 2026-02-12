@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Metrics Dashboard - IMB | D&amp;D | CLN | Builder Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1480px;margin:0 auto;padding:24px}
+header{text-align:center;margin-bottom:28px}
+header h1{font-size:2.1rem;background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800}
+header p{color:#94a3b8;margin-top:6px;font-size:.95rem}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:linear-gradient(135deg,#1e293b,#1e2740);border:1px solid #334155;border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.blue::before{background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.kpi.green::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.yellow::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.kpi.purple::before{background:linear-gradient(90deg,#a78bfa,#c084fc)}
+.kpi.cyan::before{background:linear-gradient(90deg,#22d3ee,#06b6d4)}
+.kpi.rose::before{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.kpi.orange::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.teal::before{background:linear-gradient(90deg,#2dd4bf,#14b8a6)}
+.kpi .num{font-size:1.8rem;font-weight:800;margin:5px 0 3px}
+.kpi .num.blue{color:#38bdf8}.kpi .num.green{color:#34d399}.kpi .num.yellow{color:#fbbf24}
+.kpi .num.purple{color:#a78bfa}.kpi .num.cyan{color:#22d3ee}.kpi .num.rose{color:#fb7185}
+.kpi .num.orange{color:#fb923c}.kpi .num.teal{color:#2dd4bf}
+.kpi .label{font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:16px;margin-bottom:16px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px;margin-bottom:16px}
+.card{background:linear-gradient(135deg,#1e293b,#1e2740);border:1px solid #334155;border-radius:14px;padding:18px}
+.card h3{font-size:.95rem;color:#cbd5e1;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 span{font-size:1.05rem}
+canvas{max-height:300px}
+.proj-header{display:flex;align-items:center;gap:10px;margin:22px 0 12px;padding-left:12px;border-left:4px solid}
+.proj-header h2{font-size:1.15rem;font-weight:700}
+.proj-header .tag{font-size:.72rem;padding:3px 10px;border-radius:50px;font-weight:600}
+.tbl-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:#0f172a;color:#94a3b8;text-transform:uppercase;font-size:.7rem;letter-spacing:.5px;padding:9px 10px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:8px 10px;border-bottom:1px solid #1e293b;white-space:nowrap}
+tr:hover td{background:#1e293b80}
+.badge{padding:2px 9px;border-radius:50px;font-size:.7rem;font-weight:600;display:inline-block}
+.b-done{background:#065f4620;color:#34d399;border:1px solid #34d39940}
+.b-todo{background:#1e40af20;color:#60a5fa;border:1px solid #60a5fa40}
+.b-ip{background:#92400e20;color:#fbbf24;border:1px solid #fbbf2440}
+.b-cancel{background:#be123c20;color:#fb7185;border:1px solid #fb718540}
+.b-p0{background:#dc262620;color:#f87171;border:1px solid #f8717140}
+.b-p1{background:#ea580c20;color:#fb923c;border:1px solid #fb923c40}
+.b-p2{background:#ca8a0420;color:#fbbf24;border:1px solid #fbbf2440}
+.b-p3{background:#1e40af20;color:#60a5fa;border:1px solid #60a5fa40}
+.mini-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#0f172a}
+.mini-bar div{height:100%}
+.timestamp{text-align:center;color:#475569;font-size:.73rem;margin-top:22px;padding:14px}
+.proj-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
+.pk{background:#0f172a80;border:1px solid #1e293b;border-radius:10px;padding:10px;text-align:center}
+.pk .v{font-size:1.4rem;font-weight:800}.pk .l{font-size:.68rem;color:#64748b;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="dash">
+<header>
+    <h1>QA Metrics Dashboard</h1>
+    <p>IMB &bull; Documents &amp; Delivery &bull; Consumer Lending &bull; Builder Platform &mdash; Blend Production</p>
+</header>
+
+<div class="kpi-row" id="topKpi"></div>
+
+<!-- Cross-project charts -->
+<div class="grid2">
+    <div class="card"><h3><span>📊</span> Issues by Project</h3><canvas id="projBar"></canvas></div>
+    <div class="card"><h3><span>🎯</span> Status Distribution (All Projects)</h3><canvas id="statusDonut"></canvas></div>
+</div>
+<div class="grid2">
+    <div class="card"><h3><span>⚠️</span> Priority Breakdown by Project</h3><canvas id="prioChart"></canvas></div>
+    <div class="card"><h3><span>📈</span> Completion Rate by Project (%)</h3><canvas id="compChart"></canvas></div>
+</div>
+<div class="grid2">
+    <div class="card"><h3><span>👥</span> Team Size by Project</h3><canvas id="teamChart"></canvas></div>
+    <div class="card"><h3><span>🔥</span> Critical / Blocking Issues by Project</h3><canvas id="critChart"></canvas></div>
+</div>
+
+<!-- Per-Project Sections -->
+<div id="projSections"></div>
+
+<div class="timestamp">Data sourced from JIRA (blendlabs.atlassian.net) &bull; Generated: <span id="ts"></span></div>
+</div>
+
+<script>
+const C={blue:'#38bdf8',green:'#34d399',yellow:'#fbbf24',purple:'#a78bfa',cyan:'#22d3ee',rose:'#fb7185',orange:'#fb923c',indigo:'#818cf8',teal:'#2dd4bf',pink:'#f472b6',lime:'#a3e635',emerald:'#10b981',sky:'#7dd3fc',red:'#f87171'};
+
+// ===== PROJECT DATA =====
+const projects = {
+  IMB: {
+    key:'IM', fullName:'IMB-India Mortgage Banking', color:C.blue, borderColor:'#38bdf8',
+    totalIssues:191, recentSample:50,
+    status:{Done:23,'Ready for QA':0,'In Progress':6,'To Do':20,Blocked:1},
+    priority:{'P0 (Blocking)':0,'P1 (Critical)':0,'P2 (Major)':8,'P3 (Minor)':42},
+    team:[
+      {name:'Sahil Jamwal',done:8,ip:0,todo:2,focus:'Groups V2, API, Encompass'},
+      {name:'Siddhartha Paul',done:4,ip:1,todo:4,focus:'Swap Borrower, Encompass Sync'},
+      {name:'Akash Pai',done:3,ip:1,todo:2,focus:'Edge Proxy, Mobile, Bridge Loan'},
+      {name:'Siddhant Vyas',done:4,ip:0,todo:1,focus:'Encompass 2-way Sync'},
+      {name:'Ajay Shekar',done:2,ip:2,todo:1,focus:'Encompass Sync, Mapping'},
+      {name:'Hemanth Surya',done:3,ip:1,todo:2,focus:'PAL Editor, Address Fix'},
+      {name:'Darshan Garje',done:0,ip:0,todo:1,focus:'Swap Borrower Testing'},
+      {name:'Snekha Jaganathan',done:0,ip:0,todo:1,focus:'Property Value Refinance'},
+      {name:'Melissa Cohen',done:0,ip:1,todo:0,focus:'Mobile Disclosure Tracker'},
+    ],
+    recentDone:[
+      {key:'IM-184',summary:'Encompass two way sync - Pricing (KT + mapping)',assignee:'Siddhant Vyas'},
+      {key:'IM-183',summary:'Encompass two way sync field mapping mismatch Pt3',assignee:'Siddhartha Paul'},
+      {key:'IM-174',summary:'KT sessions - Encompass 2 way sync (Siddhant)',assignee:'Siddhant Vyas'},
+      {key:'IM-169',summary:'Code review for PAL Preview',assignee:'Hemanth Surya'},
+      {key:'IM-167',summary:'Blend to Encompass Mapping',assignee:'Ajay Shekar'},
+      {key:'IM-161',summary:'Unit Tests Coverage',assignee:'Sahil Jamwal'},
+      {key:'IM-159',summary:'Feature Testing',assignee:'Sahil Jamwal'},
+      {key:'IM-142',summary:'Add Feature Flag for Clarksville MD address fix',assignee:'Hemanth Surya'},
+    ],
+    recentActive:[
+      {key:'IM-177',summary:'Move Mobile-API-Gateway Behind Edge-Proxy',assignee:'Akash Pai',status:'Code Review'},
+      {key:'IM-162',summary:'Mobile disclosure tracker not accurate (USBank)',assignee:'Melissa Cohen',status:'Dev in Progress'},
+      {key:'IM-155',summary:'Add PAL Editor to documentor part 2/2',assignee:'Hemanth Surya',status:'Code Review'},
+      {key:'IM-152',summary:'Activity Log - Consent for swapping borrower',assignee:'Siddhartha Paul',status:'Dev in Progress'},
+      {key:'IM-150',summary:'Encompass subscription hooks payload - 5',assignee:'Ajay Shekar',status:'Dev in Progress'},
+      {key:'IM-146',summary:'Refining Blend delta changes to Encompass Patch',assignee:'Ajay Shekar',status:'Dev in Progress'},
+    ]
+  },
+  'D&D': {
+    key:'DD', fullName:'Documents & Delivery', color:C.green, borderColor:'#34d399',
+    totalIssues:4104, recentSample:50,
+    status:{Done:28,'In Progress':2,'To Do':20},
+    priority:{'P0 (Blocking)':0,'P1 (Critical)':3,'P2 (Major)':18,'P3 (Minor)':27,'P4 (Trivial)':2},
+    team:[
+      {name:'Will Duan',done:4,ip:0,todo:1,focus:'Cert Rotation, Postgres Upgrade, OneTrust'},
+      {name:'Ya He',done:4,ip:0,todo:2,focus:'Disclosures, ZIP+4, On-call Resources'},
+      {name:'Mukesh Jha',done:0,ip:2,todo:0,focus:'BSR Room Issues, Scheduling'},
+      {name:'Ari Mendelson',done:1,ip:0,todo:2,focus:'Disclosures, Document Review'},
+      {name:'Alan Castro',done:1,ip:0,todo:0,focus:'Timestamp Reset'},
+      {name:'Tamia Forbes',done:1,ip:0,todo:0,focus:'Assets Stuck Refreshing'},
+      {name:'Isai Gonzalez Olmos',done:1,ip:0,todo:0,focus:'USBank Disclosures'},
+      {name:'Anatoliy Sokolov',done:0,ip:0,todo:1,focus:'eClose Retool'},
+      {name:'Hai Ly',done:0,ip:0,todo:1,focus:'Team Retool UI'},
+    ],
+    recentDone:[
+      {key:'DD-4100',summary:'Assets Stuck Refreshing - crosscountrymortgage',assignee:'Tamia Forbes'},
+      {key:'DD-4070',summary:'PenFed document in disclosure package separated',assignee:'Will Duan'},
+      {key:'DD-4067',summary:'Initial Disclosures via Consumer Connect issue',assignee:'Ari Mendelson'},
+      {key:'DD-4062',summary:'US Bank Custom document follow ups - DO NOT EXPORT',assignee:'Ya He'},
+      {key:'DD-4055',summary:'USBank disclosure docs missing under Docs tab',assignee:'Isai Gonzalez Olmos'},
+      {key:'DD-4012',summary:'Postgres v13.18 Upgrades for DD services',assignee:'Will Duan'},
+      {key:'DD-4005',summary:'Initial disclosures issued then immediately cancelled',assignee:'Ya He'},
+    ],
+    recentActive:[
+      {key:'DD-4080',summary:'Room Malfunctioning - Documents signed but disappeared (MRC)',assignee:'Mukesh Jha',status:'In Progress'},
+      {key:'DD-4079',summary:'Inconsistent Scheduling Task (uwcreditunion)',assignee:'Mukesh Jha',status:'In Progress'},
+    ]
+  },
+  CLN: {
+    key:'CLN', fullName:'Consumer Lending', color:C.yellow, borderColor:'#fbbf24',
+    totalIssues:244, recentSample:50,
+    status:{Done:14,'In Progress':3,'To Do':25,Cancelled:8},
+    priority:{'P0 (Blocking)':2,'P1 (Critical)':10,'P2 (Major)':6,'P3 (Minor)':26,'P4 (Trivial)':2},
+    team:[
+      {name:'Suyog Bhatia',done:1,ip:1,todo:1,focus:'CC Banker, Same Email Fix, Testing Flag'},
+      {name:'Sathish Krishnan',done:1,ip:1,todo:1,focus:'MISMO Generation, Job Title'},
+      {name:'Kalpana Sharma',done:1,ip:0,todo:2,focus:'BMO PL Frozen Credit, Loan Types'},
+      {name:'Ali Graham',done:0,ip:1,todo:1,focus:'CL Template Backlog, Teachers FCU'},
+      {name:'Eduardo Angeles',done:1,ip:0,todo:1,focus:'CC Soft Credit Pull, PL Approval'},
+      {name:'Mahesh Shetty',done:2,ip:0,todo:0,focus:'CC Banker Side, Authorized Users'},
+      {name:'Gabriele Giorgi',done:1,ip:0,todo:0,focus:'PLv6 Membership Button'},
+      {name:'Bukka Venugopal Reddy',done:0,ip:0,todo:2,focus:'Teachers FCU Auto Loan'},
+      {name:'Simon Getahun',done:1,ip:0,todo:0,focus:'CC CreditPullConfig'},
+      {name:'Nitin Devara',done:0,ip:0,todo:0,focus:'CC/AL/PL Approve Screen'},
+      {name:'Richard Gau',done:1,ip:0,todo:0,focus:'DMS Access'},
+    ],
+    recentDone:[
+      {key:'CLN-214',summary:'TeachersFCU CC - Error with soft credit pull in BT',assignee:'Eduardo Angeles'},
+      {key:'CLN-207',summary:'Add CreditPullConfig to CC',assignee:'Simon Getahun'},
+      {key:'CLN-205',summary:'CC Banker not fast forwarded to decision summary',assignee:'Suyog Bhatia'},
+      {key:'CLN-204',summary:'ALL - Capture job title for employment income',assignee:'Sathish Krishnan'},
+      {key:'CLN-202',summary:'PLv6 Apply Membership Button on disabled crosssell',assignee:'Gabriele Giorgi'},
+      {key:'CLN-201',summary:'BMO PL Joint Income Handling mismatch in DMS',assignee:'Unassigned'},
+      {key:'CLN-199',summary:'CC App from Banker site goes to Authorized Users',assignee:'Mahesh Shetty'},
+      {key:'CLN-197',summary:'CC v5 Authorized Users section appearing twice',assignee:'Mahesh Shetty'},
+    ],
+    recentActive:[
+      {key:'CLN-242',summary:'Consumer Lending template backlog',assignee:'Ali Graham',status:'In Progress'},
+      {key:'CLN-235',summary:'Align PLv6 Data with Blend Schema - MISMO Phase 1',assignee:'Sathish Krishnan',status:'Dev in Progress'},
+      {key:'CLN-215',summary:'TeachersFCU CC/VL stuck on same email for co-applicant',assignee:'Suyog Bhatia',status:'Dev in Progress'},
+    ]
+  },
+  CBP: {
+    key:'CBP', fullName:'Builder Platform (Config Platform)', color:C.purple, borderColor:'#a78bfa',
+    totalIssues:13419, recentSample:50,
+    status:{Done:16,'In Progress':7,'To Do':27},
+    priority:{'P0 (Blocking)':0,'P1 (Critical)':2,'P2 (Major)':7,'P3 (Minor)':38,'P4 (Trivial)':2},
+    team:[
+      {name:'Simon Leblanc',done:7,ip:2,todo:0,focus:'Diff Preview, Caliper, PII, Release Scripts'},
+      {name:'Shimrit Yacobi',done:5,ip:2,todo:7,focus:'RUM, Storybook, Accessibility, Percy'},
+      {name:'Shreshth Malik',done:1,ip:1,todo:1,focus:'Sync Server, Terraform'},
+      {name:'George Su',done:1,ip:0,todo:0,focus:'Beta Hotfix, Rapid Go-live'},
+      {name:'Asif Parvez',done:0,ip:0,todo:1,focus:'Workflow Engine Interface'},
+      {name:'Abhishek Sarabi',done:0,ip:1,todo:0,focus:'Temporal CCv5 Validation'},
+    ],
+    recentDone:[
+      {key:'CBP-13412',summary:'Beta hotfix for Rapid go-live testing FifthThird',assignee:'George Su'},
+      {key:'CBP-13407',summary:'Sync server sandbox not saving documents',assignee:'Shreshth Malik'},
+      {key:'CBP-13393',summary:'Create Builder Identity creds for QA automation',assignee:'Simon Leblanc'},
+      {key:'CBP-13392',summary:'Broken Caliper test after 2026 terms update',assignee:'Simon Leblanc'},
+      {key:'CBP-13385',summary:'Beta release visual regression in app-page DA',assignee:'Simon Leblanc'},
+      {key:'CBP-13382',summary:'RUM - reduce log noise and errors',assignee:'Shimrit Yacobi'},
+      {key:'CBP-13376',summary:'PII in logs - All (Critical)',assignee:'Simon Leblanc'},
+      {key:'CBP-13374',summary:'Set storybook for the common package',assignee:'Shimrit Yacobi'},
+    ],
+    recentActive:[
+      {key:'CBP-13409',summary:'Button labeling standards for accessibility',assignee:'Shimrit Yacobi',status:'In Progress'},
+      {key:'CBP-13395',summary:'Velocity unit tests allow empty test name',assignee:'Simon Leblanc',status:'Code Review'},
+      {key:'CBP-13384',summary:'Mismatch in terraform roles configuration',assignee:'Shreshth Malik',status:'Dev in Progress'},
+      {key:'CBP-13383',summary:'RUM - setup APM and Feature Flag monitoring',assignee:'Shimrit Yacobi',status:'Code Review'},
+      {key:'CBP-13379',summary:'Testing 14-Node Temporal in CCv5 Base Template',assignee:'Abhishek Sarabi',status:'Dev in Progress'},
+      {key:'CBP-13370',summary:'Public API endpoints in PROD - Review',assignee:'Shimrit Yacobi',status:'Dev in Progress'},
+      {key:'CBP-13366',summary:'Fix useUniversalSelector state injection',assignee:'Simon Leblanc',status:'Dev in Progress'},
+    ]
+  }
+};
+
+// ===== AGGREGATIONS =====
+const projNames = Object.keys(projects);
+const projColors = projNames.map(p=>projects[p].color);
+const totalAllDone = projNames.reduce((s,p)=>{const st=projects[p].status;return s+(st.Done||0)+(st['Ready for QA']||0)},0);
+const totalAllIP = projNames.reduce((s,p)=>{const st=projects[p].status;return s+(st['In Progress']||0)},0);
+const totalAllTodo = projNames.reduce((s,p)=>{const st=projects[p].status;return s+(st['To Do']||0)+(st.Blocked||0)},0);
+const totalAllCancel = projNames.reduce((s,p)=>{const st=projects[p].status;return s+(st.Cancelled||0)},0);
+const totalAll = totalAllDone+totalAllIP+totalAllTodo+totalAllCancel;
+const totalCrit = projNames.reduce((s,p)=>{const pr=projects[p].priority;return s+(pr['P0 (Blocking)']||0)+(pr['P1 (Critical)']||0)},0);
+const totalTeam = projNames.reduce((s,p)=>s+projects[p].team.length,0);
+const overallComp = ((totalAllDone/totalAll)*100).toFixed(1);
+
+// Top KPIs
+const kpis = [
+  {l:'Total Issues (Recent)',v:totalAll,c:'blue'},
+  {l:'Completed',v:totalAllDone,c:'green'},
+  {l:'In Progress',v:totalAllIP,c:'yellow'},
+  {l:'Backlog',v:totalAllTodo,c:'cyan'},
+  {l:'Cancelled',v:totalAllCancel,c:'rose'},
+  {l:'Critical/Blocking',v:totalCrit,c:'orange'},
+  {l:'Team Members',v:totalTeam,c:'purple'},
+  {l:'Completion Rate',v:overallComp+'%',c:'teal'},
+];
+document.getElementById('topKpi').innerHTML = kpis.map(k=>
+  `<div class="kpi ${k.c}"><div class="label">${k.l}</div><div class="num ${k.c}">${k.v}</div></div>`).join('');
+
+// ===== CHARTS =====
+Chart.defaults.color='#94a3b8';Chart.defaults.borderColor='#1e293b';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+
+function sb(s){const m={'Done':'b-done','Ready for QA':'b-done','To Do':'b-todo','Blocked':'b-todo','In Progress':'b-ip','Dev in Progress':'b-ip','Code Review':'b-ip','Cancelled':'b-cancel'};return `<span class="badge ${m[s]||'b-todo'}">${s}</span>`;}
+
+// 1. Issues by Project (stacked)
+new Chart(document.getElementById('projBar'),{type:'bar',data:{
+  labels:projNames,
+  datasets:[
+    {label:'Done',data:projNames.map(p=>(projects[p].status.Done||0)+(projects[p].status['Ready for QA']||0)),backgroundColor:C.green},
+    {label:'In Progress',data:projNames.map(p=>projects[p].status['In Progress']||0),backgroundColor:C.yellow},
+    {label:'To Do',data:projNames.map(p=>(projects[p].status['To Do']||0)+(projects[p].status.Blocked||0)),backgroundColor:C.blue},
+    {label:'Cancelled',data:projNames.map(p=>projects[p].status.Cancelled||0),backgroundColor:C.rose},
+  ]
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#1e293b'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:12}}}}});
+
+// 2. Status doughnut
+new Chart(document.getElementById('statusDonut'),{type:'doughnut',data:{
+  labels:['Done','In Progress','To Do','Cancelled'],
+  datasets:[{data:[totalAllDone,totalAllIP,totalAllTodo,totalAllCancel],backgroundColor:[C.green,C.yellow,C.blue,C.rose],borderWidth:0}]
+},options:{cutout:'60%',plugins:{legend:{position:'right',labels:{padding:14,usePointStyle:true,pointStyleWidth:10}}}}});
+
+// 3. Priority by project
+const prioLabels=['P0 (Blocking)','P1 (Critical)','P2 (Major)','P3 (Minor)','P4 (Trivial)'];
+const prioCols=[C.red,C.orange,C.yellow,C.blue,C.teal];
+new Chart(document.getElementById('prioChart'),{type:'bar',data:{
+  labels:projNames,
+  datasets:prioLabels.map((pl,i)=>({label:pl,data:projNames.map(p=>projects[p].priority[pl]||0),backgroundColor:prioCols[i]}))
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#1e293b'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:10,font:{size:10}}}}}});
+
+// 4. Completion rate
+const compRates = projNames.map(p=>{const s=projects[p].status;const d=(s.Done||0)+(s['Ready for QA']||0);const t=Object.values(s).reduce((a,b)=>a+b,0);return t?+(d/t*100).toFixed(1):0;});
+new Chart(document.getElementById('compChart'),{type:'bar',data:{
+  labels:projNames,
+  datasets:[{data:compRates,backgroundColor:compRates.map(v=>v>=60?C.green:v>=40?C.yellow:C.rose),borderWidth:0,borderRadius:8}]
+},options:{scales:{y:{beginAtZero:true,max:100,grid:{color:'#1e293b'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'%'}}}}});
+
+// 5. Team size
+new Chart(document.getElementById('teamChart'),{type:'bar',data:{
+  labels:projNames,
+  datasets:[{data:projNames.map(p=>projects[p].team.length),backgroundColor:projColors,borderWidth:0,borderRadius:8}]
+},options:{scales:{y:{beginAtZero:true,grid:{color:'#1e293b'}},x:{grid:{display:false}}},plugins:{legend:{display:false}}}});
+
+// 6. Critical issues
+new Chart(document.getElementById('critChart'),{type:'bar',data:{
+  labels:projNames,
+  datasets:[
+    {label:'P0 Blocking',data:projNames.map(p=>projects[p].priority['P0 (Blocking)']||0),backgroundColor:C.red},
+    {label:'P1 Critical',data:projNames.map(p=>projects[p].priority['P1 (Critical)']||0),backgroundColor:C.orange},
+  ]
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#1e293b'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:12}}}}});
+
+// ===== PER-PROJECT SECTIONS =====
+let html = '';
+projNames.forEach(pn => {
+  const p = projects[pn];
+  const st = p.status;
+  const done = (st.Done||0)+(st['Ready for QA']||0);
+  const ip = st['In Progress']||0;
+  const todo = (st['To Do']||0)+(st.Blocked||0);
+  const cancel = st.Cancelled||0;
+  const total = done+ip+todo+cancel;
+  const comp = total?((done/total)*100).toFixed(1):0;
+  const crit = (p.priority['P0 (Blocking)']||0)+(p.priority['P1 (Critical)']||0);
+
+  html += `<div class="proj-header" style="border-color:${p.borderColor}">
+    <h2 style="color:${p.color}">${pn}</h2>
+    <span class="tag" style="background:${p.color}20;color:${p.color};border:1px solid ${p.color}40">${p.fullName}</span>
+    <span class="tag" style="background:#0f172a;color:#94a3b8;border:1px solid #334155">Project: ${p.key}</span>
+  </div>`;
+
+  // Mini KPIs
+  html += `<div class="proj-kpi">
+    <div class="pk"><div class="v" style="color:${p.color}">${total}</div><div class="l">Total (Sample)</div></div>
+    <div class="pk"><div class="v" style="color:${C.green}">${done}</div><div class="l">Done</div></div>
+    <div class="pk"><div class="v" style="color:${C.yellow}">${ip}</div><div class="l">In Progress</div></div>
+    <div class="pk"><div class="v" style="color:${C.blue}">${todo}</div><div class="l">To Do</div></div>
+    <div class="pk"><div class="v" style="color:${comp>=60?C.green:comp>=40?C.yellow:C.rose}">${comp}%</div><div class="l">Completion</div></div>
+    <div class="pk"><div class="v" style="color:${crit>0?C.red:C.green}">${crit}</div><div class="l">Critical</div></div>
+  </div>`;
+
+  // Coverage bar
+  html += `<div class="card" style="margin-bottom:14px;padding:14px"><div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#0f172a">
+    <div style="width:${done/total*100}%;background:${C.green}"></div>
+    <div style="width:${ip/total*100}%;background:${C.yellow}"></div>
+    <div style="width:${todo/total*100}%;background:${C.blue}"></div>
+    ${cancel?`<div style="width:${cancel/total*100}%;background:${C.rose}"></div>`:''}
+  </div></div>`;
+
+  // Team table
+  html += `<div class="grid2"><div class="card"><h3><span>👥</span> Team Members - ${pn}</h3><div class="tbl-wrap"><table>
+    <thead><tr><th>Name</th><th style="text-align:center">Done</th><th style="text-align:center">In Progress</th><th style="text-align:center">To Do</th><th>Progress</th><th>Focus Areas</th></tr></thead><tbody>`;
+  p.team.forEach(t=>{
+    const tt=t.done+t.ip+t.todo;const pct=tt?(t.done/tt*100):0;
+    html += `<tr><td style="font-weight:600">${t.name}</td>
+      <td style="text-align:center;color:${C.green};font-weight:700">${t.done}</td>
+      <td style="text-align:center;color:${C.yellow};font-weight:700">${t.ip}</td>
+      <td style="text-align:center;color:${C.blue};font-weight:700">${t.todo}</td>
+      <td style="min-width:100px"><div class="mini-bar"><div style="width:${tt?t.done/tt*100:0}%;background:${C.green}"></div><div style="width:${tt?t.ip/tt*100:0}%;background:${C.yellow}"></div><div style="width:${tt?t.todo/tt*100:0}%;background:${C.blue}"></div></div></td>
+      <td style="color:#94a3b8;font-size:.75rem;white-space:normal;max-width:200px">${t.focus}</td></tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+
+  // Active & Done tables
+  html += `<div class="card"><h3><span>🔄</span> Active Work & Recent Completions</h3><div class="tbl-wrap"><table>
+    <thead><tr><th>Key</th><th>Summary</th><th>Assignee</th><th>Status</th></tr></thead><tbody>`;
+  p.recentActive.forEach(i=>{
+    html += `<tr><td><a href="https://blendlabs.atlassian.net/browse/${i.key}" target="_blank" style="color:${p.color};text-decoration:none">${i.key}</a></td><td style="white-space:normal;max-width:350px">${i.summary}</td><td style="font-weight:600">${i.assignee}</td><td>${sb(i.status)}</td></tr>`;
+  });
+  p.recentDone.forEach(i=>{
+    html += `<tr><td><a href="https://blendlabs.atlassian.net/browse/${i.key}" target="_blank" style="color:${p.color};text-decoration:none">${i.key}</a></td><td style="white-space:normal;max-width:350px">${i.summary}</td><td style="font-weight:600">${i.assignee}</td><td>${sb('Done')}</td></tr>`;
+  });
+  html += `</tbody></table></div></div></div>`;
+});
+document.getElementById('projSections').innerHTML = html;
+document.getElementById('ts').textContent = new Date().toLocaleString();
+</script>
+</body>
+</html>

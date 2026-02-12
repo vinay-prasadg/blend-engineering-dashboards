@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blend Engineering Dashboards</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#070b14;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{max-width:900px;width:100%;padding:40px 24px}
+header{text-align:center;margin-bottom:48px}
+header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#a78bfa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+header p{color:#94a3b8;font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.card{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:28px 24px;text-decoration:none;color:#e2e8f0;transition:all .2s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-4px);border-color:rgba(99,102,241,.4);box-shadow:0 12px 40px rgba(99,102,241,.1)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.card:nth-child(1)::before{background:linear-gradient(90deg,#818cf8,#a78bfa)}
+.card:nth-child(2)::before{background:linear-gradient(90deg,#34d399,#6ee7b7)}
+.card:nth-child(3)::before{background:linear-gradient(90deg,#fb923c,#fbbf24)}
+.card:nth-child(4)::before{background:linear-gradient(90deg,#f87171,#fb923c)}
+.card:nth-child(5)::before{background:linear-gradient(90deg,#60a5fa,#38bdf8)}
+.card:nth-child(6)::before{background:linear-gradient(90deg,#c084fc,#a78bfa)}
+.card:nth-child(7)::before{background:linear-gradient(90deg,#4ade80,#34d399)}
+.card:nth-child(8)::before{background:linear-gradient(90deg,#22d3ee,#818cf8)}
+.card h2{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.card p{font-size:.82rem;color:#94a3b8;line-height:1.5}
+.badge{display:inline-block;font-size:.65rem;padding:2px 8px;border-radius:6px;font-weight:600;margin-top:12px;text-transform:uppercase;letter-spacing:.5px}
+.badge-exec{background:rgba(129,140,248,.15);color:#818cf8}
+.badge-qa{background:rgba(52,211,153,.15);color:#34d399}
+.badge-defect{background:rgba(248,113,113,.15);color:#f87171}
+.badge-sprint{background:rgba(251,146,60,.15);color:#fb923c}
+.badge-epic{background:rgba(167,139,250,.15);color:#a78bfa}
+.badge-oce{background:rgba(96,165,250,.15);color:#60a5fa}
+footer{text-align:center;margin-top:48px;color:#475569;font-size:.75rem}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Blend Engineering Dashboards</h1>
+<p>JIRA-powered dashboards for production tracking, QA metrics, and sprint analytics</p>
+</header>
+<div class="grid">
+  <a class="card" href="epic-story-mapping.html">
+    <h2>Epic &rarr; Story &amp; Bug Mapping</h2>
+    <p>Complete mapping of Epics to Stories and Bugs across all 10 projects with orphan analysis</p>
+    <span class="badge badge-epic">Epic Tracking</span>
+  </a>
+  <a class="card" href="executive-dashboard.html">
+    <h2>Executive Dashboard</h2>
+    <p>Sprint status, velocity, predictability, and QA metrics across all projects</p>
+    <span class="badge badge-exec">Executive</span>
+  </a>
+  <a class="card" href="production-defects.html">
+    <h2>Production Defects</h2>
+    <p>Production defect counts, status distribution, priority breakdown, and trends</p>
+    <span class="badge badge-defect">Defects</span>
+  </a>
+  <a class="card" href="oce-dashboard.html">
+    <h2>OCE Active Tickets</h2>
+    <p>On-Call Engineer tickets with P0/P1 tracking and EPD-logged analysis</p>
+    <span class="badge badge-oce">OCE</span>
+  </a>
+  <a class="card" href="qa-metrics-dashboard.html">
+    <h2>QA Metrics Dashboard</h2>
+    <p>QA status, defect tracking, and quality trends for IMB, DDIND, CLN, CB projects</p>
+    <span class="badge badge-qa">QA</span>
+  </a>
+  <a class="card" href="qual-executive-dashboard.html">
+    <h2>QUAL Executive Dashboard</h2>
+    <p>Quality Engineering executive view with sprint velocity and test metrics</p>
+    <span class="badge badge-qa">QUAL</span>
+  </a>
+  <a class="card" href="qual-test-coverage.html">
+    <h2>QUAL Test Coverage</h2>
+    <p>Tester performance, test case coverage, and automation metrics for QUAL repo</p>
+    <span class="badge badge-qa">Test Coverage</span>
+  </a>
+  <a class="card" href="imb-defects-chart.html">
+    <h2>IMB Defects Chart</h2>
+    <p>Detailed defect analysis and visualization for the IMB project</p>
+    <span class="badge badge-defect">IMB</span>
+  </a>
+</div>
+<footer>Blend Engineering &bull; Data sourced from JIRA &bull; Hosted on GitHub Pages</footer>
+</div>
+</body>
+</html>

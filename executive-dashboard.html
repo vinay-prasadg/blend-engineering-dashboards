@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive JIRA Dashboard - Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1520px;margin:0 auto;padding:20px 24px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e293b}
+header .title h1{font-size:1.6rem;background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-.3px}
+header .title p{color:#64748b;font-size:.8rem;margin-top:3px}
+header .meta{text-align:right;font-size:.72rem;color:#475569}
+header .meta .live{display:inline-block;width:7px;height:7px;background:#22c55e;border-radius:50%;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* Section titles */
+.section{margin:24px 0 12px;display:flex;align-items:center;gap:10px}
+.section h2{font-size:1.05rem;font-weight:700;color:#cbd5e1}
+.section .line{flex:1;height:1px;background:linear-gradient(90deg,#334155,transparent)}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.b::before{background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.kpi.g::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.y::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.kpi.p::before{background:linear-gradient(90deg,#a78bfa,#c084fc)}
+.kpi.r::before{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.kpi.c::before{background:linear-gradient(90deg,#22d3ee,#06b6d4)}
+.kpi.o::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.t::before{background:linear-gradient(90deg,#2dd4bf,#14b8a6)}
+.kpi .lbl{font-size:.65rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:1.65rem;font-weight:800;margin:3px 0 1px}
+.kpi .sub{font-size:.68rem;color:#475569}
+.vb{color:#38bdf8}.vg{color:#34d399}.vy{color:#fbbf24}.vp{color:#a78bfa}.vr{color:#fb7185}.vc{color:#22d3ee}.vo{color:#fb923c}.vt{color:#2dd4bf}
+/* Grids */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}}
+/* Cards */
+.card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:16px}
+.card h3{font-size:.85rem;color:#94a3b8;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.card h3 span{font-size:1rem}
+canvas{max-height:280px}
+/* Sprint cards */
+.sprint-card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.sprint-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sprint-card .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.sprint-card .header .name{font-size:.9rem;font-weight:700}
+.sprint-card .header .dates{font-size:.68rem;color:#64748b}
+.sprint-card .bar{height:10px;border-radius:5px;overflow:hidden;display:flex;background:#0a0e1a;margin-bottom:8px}
+.sprint-card .bar div{height:100%;transition:width .3s}
+.sprint-card .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.sprint-card .stats .s{padding:6px}
+.sprint-card .stats .s .n{font-size:1.1rem;font-weight:800}
+.sprint-card .stats .s .l{font-size:.6rem;color:#64748b;text-transform:uppercase}
+/* Tables */
+.tbl-wrap{overflow-x:auto;max-height:380px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{background:#0a0e1a;color:#64748b;text-transform:uppercase;font-size:.65rem;letter-spacing:.5px;padding:8px 10px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:7px 10px;border-bottom:1px solid #111827;white-space:nowrap}
+tr:hover td{background:#111827a0}
+.badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:600;display:inline-block}
+.bg{background:#065f4620;color:#34d399;border:1px solid #34d39930}
+.by{background:#92400e20;color:#fbbf24;border:1px solid #fbbf2430}
+.bb{background:#1e40af20;color:#60a5fa;border:1px solid #60a5fa30}
+.br{background:#be123c20;color:#fb7185;border:1px solid #fb718530}
+.bo{background:#ea580c20;color:#fb923c;border:1px solid #fb923c30}
+/* Velocity table */
+.vel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px}
+.vel-card{background:#0a0e1a;border:1px solid #1e293b;border-radius:10px;padding:12px;text-align:center}
+.vel-card .proj{font-size:.72rem;color:#64748b;text-transform:uppercase;margin-bottom:4px}
+.vel-card .v{font-size:2rem;font-weight:800}
+.vel-card .desc{font-size:.65rem;color:#475569;margin-top:2px}
+.ts{text-align:center;color:#334155;font-size:.7rem;margin-top:24px;padding:16px 0}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<header>
+  <div class="title">
+    <h1>Executive Engineering Dashboard</h1>
+    <p>Sprint Status &bull; Velocity &bull; Predictability &bull; QA Metrics &mdash; IMB, DDIND, CLN, CBP, SENG</p>
+  </div>
+  <div class="meta">
+    <div><span class="live"></span> Live from JIRA</div>
+    <div>Blend Engineering &bull; Q1 2026</div>
+    <div id="ts"></div>
+  </div>
+</header>
+
+<!-- ===== EXECUTIVE KPIs ===== -->
+<div class="kpi-row" id="execKpi"></div>
+
+<!-- ===== SPRINT STATUS ===== -->
+<div class="section"><h2>Sprint Status - Active Sprints</h2><div class="line"></div></div>
+<div class="g4" id="sprintCards"></div>
+
+<!-- ===== CROSS-PROJECT CHARTS ===== -->
+<div class="section"><h2>Sprint Health Overview</h2><div class="line"></div></div>
+<div class="g2">
+  <div class="card"><h3><span>📊</span> Sprint Completion Rate (%)</h3><canvas id="compChart"></canvas></div>
+  <div class="card"><h3><span>🎯</span> Sprint Scope - Issues by Status</h3><canvas id="scopeChart"></canvas></div>
+</div>
+<div class="g2">
+  <div class="card"><h3><span>⚡</span> Sprint Velocity (Issues Completed per Sprint)</h3><canvas id="velChart"></canvas></div>
+  <div class="card"><h3><span>🔮</span> Predictability Score (%)</h3><canvas id="predChart"></canvas></div>
+</div>
+
+<!-- ===== VELOCITY METRICS ===== -->
+<div class="section"><h2>Velocity & Predictability Metrics</h2><div class="line"></div></div>
+<div class="vel-grid" id="velCards"></div>
+
+<!-- ===== QA STATUS ===== -->
+<div class="section"><h2>QA Status Across Projects</h2><div class="line"></div></div>
+<div class="g2">
+  <div class="card"><h3><span>🧪</span> QA Pipeline - Issues in QA</h3><canvas id="qaChart"></canvas></div>
+  <div class="card"><h3><span>⚠️</span> Critical & Blocking Issues</h3><canvas id="critChart"></canvas></div>
+</div>
+<div class="g2">
+  <div class="card"><h3><span>📈</span> Priority Distribution by Project</h3><canvas id="prioChart"></canvas></div>
+  <div class="card"><h3><span>👥</span> Team Workload - Active Issues per Engineer</h3><canvas id="workChart"></canvas></div>
+</div>
+
+<!-- ===== RISK TABLE ===== -->
+<div class="section"><h2>Risks & Blockers</h2><div class="line"></div></div>
+<div class="card" style="margin-bottom:14px">
+  <h3><span>🚨</span> Blocked & Critical Items Requiring Attention</h3>
+  <div class="tbl-wrap"><table id="riskTable">
+    <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+
+<!-- ===== TEAM PERFORMANCE ===== -->
+<div class="section"><h2>Team Performance Summary</h2><div class="line"></div></div>
+<div class="card">
+  <h3><span>🏆</span> Top Contributors - Current Sprint</h3>
+  <div class="tbl-wrap"><table id="teamTable">
+    <thead><tr><th>Engineer</th><th>Project</th><th style="text-align:center">Done</th><th style="text-align:center">In Progress</th><th style="text-align:center">Total</th><th>Completion %</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div>
+
+<div class="ts">Executive Dashboard &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; Projects: IMB, DDIND, CLN, CBP, SENG</div>
+</div>
+
+<script>
+const C={blue:'#38bdf8',green:'#34d399',yellow:'#fbbf24',purple:'#a78bfa',cyan:'#22d3ee',rose:'#fb7185',orange:'#fb923c',indigo:'#818cf8',teal:'#2dd4bf',red:'#f87171',sky:'#7dd3fc',lime:'#a3e635'};
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='#111827';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";Chart.defaults.font.size=11;
+
+// ===== DATA =====
+const sprints = {
+  IMB: {
+    name:'IMB_IND-26-Q1-S2', dates:'Jan 29 - Feb 12', color:C.blue,
+    total:16, done:10, ip:6, todo:0, blocked:0, cancelled:0,
+    readyForQA:4, qaIP:0,
+    prev:{name:'IMB_IND_25_Q4_S4',total:42,done:33,cancelled:4,ip:2,todo:2,blocked:1},
+    velocity:[33,10], sprintNames:['Q4-S4','Q1-S2*'],
+    team:[
+      {name:'Sahil Jamwal',done:4,ip:0},{name:'Siddhartha Paul',done:2,ip:1},
+      {name:'Akash Pai',done:2,ip:2},{name:'Siddhant Vyas',done:1,ip:0},
+      {name:'Ajay Shekar',done:0,ip:2},{name:'Hemanth Surya',done:0,ip:1}
+    ],
+    criticals:[
+      {key:'IM-179',summary:'PenFed - Allow duplicate emails for HE PQ',prio:'P2',status:'Blocked',assignee:'Siddhant Vyas'}
+    ]
+  },
+  CLN: {
+    name:'CLN-26-Q1-SP2', dates:'Jan 28 - Feb 10', color:C.yellow,
+    total:28, done:9, ip:8, todo:1, blocked:2, cancelled:8,
+    readyForQA:1, qaIP:1,
+    prev:{name:'CB19 (Q4-2025)',total:22,done:14,cancelled:3,ip:3,todo:2,blocked:0},
+    velocity:[14,9], sprintNames:['CB19','Q1-SP2*'],
+    team:[
+      {name:'Kalpana Sharma',done:2,ip:1},{name:'Eduardo Angeles',done:1,ip:2},
+      {name:'Suyog Bhatia',done:1,ip:1},{name:'Sathish Krishnan',done:1,ip:1},
+      {name:'Bukka Venugopal Reddy',done:0,ip:2},{name:'Mahesh Shetty',done:1,ip:0},
+      {name:'Simon Getahun',done:1,ip:0}
+    ],
+    criticals:[
+      {key:'CLN-215',summary:'TeachersFCU CC/VL stuck on same email co-applicant',prio:'P1',status:'Dev in Progress',assignee:'Suyog Bhatia'},
+      {key:'CLN-235',summary:'Align PLv6 Data with Blend Schema - MISMO',prio:'P1',status:'Dev in Progress',assignee:'Sathish Krishnan'},
+      {key:'CLN-190',summary:'BMO PL: Expand CB Credit Hard Pull Request',prio:'P1',status:'Dev in Progress',assignee:'Bukka V. Reddy'},
+      {key:'CLN-185',summary:'PL Debt consolidation not appearing when config enabled',prio:'P1',status:'Blocked',assignee:'Suyog Bhatia'},
+      {key:'CLN-188',summary:'BMO PL: Support eSign Followups',prio:'P1',status:'Dev in Progress',assignee:'Eduardo Angeles'},
+      {key:'CLN-204',summary:'ALL: Capture job title for employment income',prio:'P0',status:'Done',assignee:'Sathish Krishnan'}
+    ]
+  },
+  SENG: {
+    name:'SENG-26-Q1-SP2', dates:'Jan 28 - Feb 11', color:C.purple,
+    total:103, done:33, ip:13, todo:3, blocked:1, cancelled:1,
+    readyForQA:11, qaIP:5,
+    prev:{name:'SENG-26-Q1-SP1',total:85,done:55,cancelled:5,ip:15,todo:10,blocked:0},
+    velocity:[55,33], sprintNames:['Q1-SP1','Q1-SP2*'],
+    team:[
+      {name:'Fernando Arana Salas',done:6,ip:1},{name:'Misael Chavez Ramos',done:4,ip:0},
+      {name:'Omar Aldrich Aparicio',done:3,ip:1},{name:'Godwin Simon',done:3,ip:0},
+      {name:'Christian Gonzalez',done:1,ip:4},{name:'Cesar A. Hernandez',done:2,ip:1},
+      {name:'Aparna Krishnappa',done:3,ip:0},{name:'Iván Álvarez Martínez',done:2,ip:0},
+      {name:'Madhu G Ramaiah',done:0,ip:3},{name:'Mahesh Shetty',done:2,ip:0}
+    ],
+    criticals:[
+      {key:'SENG-2147',summary:'Frost Bank - Enable customer lookup',prio:'P2',status:'Blocked',assignee:'Omar A. Aparicio'},
+      {key:'SENG-2168',summary:'CRED-14160: PQ Apps 2 AANs Generated',prio:'P2',status:'To Do',assignee:'Cesar A. Hernandez'}
+    ]
+  },
+  DDIND: {
+    name:'DD-IND-26-Q1-S2', dates:'Jan 28 - Feb 10', color:C.green,
+    total:23, done:17, ip:4, todo:0, blocked:0, cancelled:1,
+    readyForQA:5, qaIP:1,
+    prev:{name:'DD-IND-26-Q1-S1',total:28,done:24,cancelled:0,ip:4,todo:0,blocked:0},
+    velocity:[24,17], sprintNames:['Q1-S1','Q1-S2*'],
+    team:[
+      {name:'Sharad Saurav',done:7,ip:1},{name:'Harikrishnan Manickam',done:4,ip:3},
+      {name:'Kumar Utkarsh',done:1,ip:1},{name:'Gaurav Kumar',done:0,ip:0},
+      {name:'Amod Kumar',done:1,ip:0}
+    ],
+    criticals:[
+      {key:'DDINDIA-554',summary:'REVIEW_DOCS Specific Visibility Override (Feature Flag) Part 1',prio:'P1',status:'Ready for QA',assignee:'Amod Kumar'}
+    ]
+  },
+  CBP: {
+    name:'Kanban (No Active Sprint)', dates:'Ongoing', color:C.orange,
+    total:50, done:16, ip:7, todo:27, blocked:0, cancelled:0,
+    readyForQA:1, qaIP:0,
+    prev:{name:'Recent 50 issues',total:50,done:16,cancelled:0,ip:7,todo:27,blocked:0},
+    velocity:[16,16], sprintNames:['Recent','Current'],
+    team:[
+      {name:'Simon Leblanc',done:7,ip:2},{name:'Shimrit Yacobi',done:5,ip:2},
+      {name:'Shreshth Malik',done:1,ip:1},{name:'Abhishek Sarabi',done:0,ip:1}
+    ],
+    criticals:[
+      {key:'CBP-13372',summary:'CP enablement stuck nodes for many tenants',prio:'P1',status:'To Do',assignee:'Unassigned'},
+      {key:'CBP-13376',summary:'PII in logs - All',prio:'P1',status:'Done',assignee:'Simon Leblanc'}
+    ]
+  }
+};
+const projOrder = ['IMB','CLN','SENG','DDIND','CBP'];
+const projColors = projOrder.map(p=>sprints[p].color);
+
+// ===== EXEC KPIs =====
+const totalIssues = projOrder.reduce((s,p)=>s+sprints[p].total,0);
+const totalDone = projOrder.reduce((s,p)=>s+sprints[p].done,0);
+const totalIP = projOrder.reduce((s,p)=>s+sprints[p].ip,0);
+const totalBlocked = projOrder.reduce((s,p)=>s+sprints[p].blocked,0);
+const totalCrit = projOrder.reduce((s,p)=>s+sprints[p].criticals.filter(c=>c.prio==='P0'||c.prio==='P1').length,0);
+const avgComp = (projOrder.reduce((s,p)=>{const sp=sprints[p];return s+(sp.done/(sp.total-sp.cancelled)*100)},0)/projOrder.length).toFixed(0);
+const totalRFQ = projOrder.reduce((s,p)=>s+sprints[p].readyForQA,0);
+const totalQAIP = projOrder.reduce((s,p)=>s+sprints[p].qaIP,0);
+const totalEngineers = projOrder.reduce((s,p)=>s+sprints[p].team.length,0);
+
+const kpis = [
+  {l:'Total Issues',v:totalIssues,c:'b',sub:'Across 5 projects'},
+  {l:'Completed',v:totalDone,c:'g',sub:`${(totalDone/totalIssues*100).toFixed(0)}% of total`},
+  {l:'In Progress',v:totalIP,c:'y',sub:'Active work'},
+  {l:'Ready for QA',v:totalRFQ,c:'c',sub:'Awaiting testing'},
+  {l:'QA In Progress',v:totalQAIP,c:'p',sub:'Being tested'},
+  {l:'Blocked',v:totalBlocked,c:'r',sub:'Need attention'},
+  {l:'Avg Completion',v:avgComp+'%',c:'t',sub:'Sprint completion rate'},
+  {l:'Engineers',v:totalEngineers,c:'o',sub:'Active contributors'}
+];
+document.getElementById('execKpi').innerHTML = kpis.map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val v${k.c}">${k.v}</div><div class="sub">${k.sub}</div></div>`).join('');
+
+// ===== SPRINT CARDS =====
+let scHtml = '';
+projOrder.forEach(pn => {
+  const s = sprints[pn];
+  const eff = s.total - s.cancelled;
+  const comp = eff ? (s.done/eff*100).toFixed(0) : 0;
+  const daysLeft = pn==='IMB'?3:pn==='CLN'?1:pn==='SENG'?2:pn==='DDIND'?1:0;
+  scHtml += `<div class="sprint-card" style="border-top:3px solid ${s.color}">
+    <div class="header">
+      <div><div class="name" style="color:${s.color}">${pn}</div><div class="dates">${s.name}</div></div>
+      <div style="text-align:right"><div style="font-size:1.3rem;font-weight:800;color:${comp>=60?C.green:comp>=40?C.yellow:C.rose}">${comp}%</div>
+      <div style="font-size:.6rem;color:#475569">${daysLeft>0?daysLeft+' days left':'Continuous'}</div></div>
+    </div>
+    <div class="bar">
+      <div style="width:${s.done/s.total*100}%;background:${C.green}"></div>
+      <div style="width:${s.ip/s.total*100}%;background:${C.yellow}"></div>
+      <div style="width:${(s.todo+s.blocked)/s.total*100}%;background:${C.blue}"></div>
+      <div style="width:${s.cancelled/s.total*100}%;background:${C.rose}"></div>
+    </div>
+    <div class="stats">
+      <div class="s"><div class="n vg">${s.done}</div><div class="l">Done</div></div>
+      <div class="s"><div class="n vy">${s.ip}</div><div class="l">In Progress</div></div>
+      <div class="s"><div class="n vb">${s.todo+s.blocked}</div><div class="l">Backlog</div></div>
+      <div class="s"><div class="n" style="color:${s.total>50?C.purple:C.cyan}">${s.total}</div><div class="l">Total</div></div>
+    </div>
+  </div>`;
+});
+document.getElementById('sprintCards').innerHTML = scHtml;
+
+// ===== COMPLETION CHART =====
+const compRates = projOrder.map(p=>{const s=sprints[p];return +(s.done/(s.total-s.cancelled)*100).toFixed(1);});
+new Chart(document.getElementById('compChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[{data:compRates,backgroundColor:compRates.map(v=>v>=60?C.green+'cc':v>=40?C.yellow+'cc':C.rose+'cc'),borderColor:compRates.map(v=>v>=60?C.green:v>=40?C.yellow:C.rose),borderWidth:1,borderRadius:6}]
+},options:{indexAxis:'y',scales:{x:{beginAtZero:true,max:100,grid:{color:'#111827'},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}}}});
+
+// ===== SCOPE CHART =====
+new Chart(document.getElementById('scopeChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'Done',data:projOrder.map(p=>sprints[p].done),backgroundColor:C.green},
+    {label:'In Progress',data:projOrder.map(p=>sprints[p].ip),backgroundColor:C.yellow},
+    {label:'To Do / Blocked',data:projOrder.map(p=>sprints[p].todo+sprints[p].blocked),backgroundColor:C.blue},
+    {label:'Cancelled',data:projOrder.map(p=>sprints[p].cancelled),backgroundColor:C.rose}
+  ]
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:10,font:{size:10}}}}}});
+
+// ===== VELOCITY CHART =====
+new Chart(document.getElementById('velChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'Previous Sprint',data:projOrder.map(p=>sprints[p].velocity[0]),backgroundColor:C.blue+'80',borderColor:C.blue,borderWidth:1,borderRadius:4},
+    {label:'Current Sprint (*in progress)',data:projOrder.map(p=>sprints[p].velocity[1]),backgroundColor:C.green+'80',borderColor:C.green,borderWidth:1,borderRadius:4}
+  ]
+},options:{scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:12}}}}});
+
+// ===== PREDICTABILITY CHART =====
+const predScores = projOrder.map(p=>{
+  const s = sprints[p];
+  const prevDoneRate = s.prev.total ? ((s.prev.done)/(s.prev.total-s.prev.cancelled)*100) : 50;
+  const currDoneRate = s.total ? (s.done/(s.total-s.cancelled)*100) : 50;
+  // Predictability = how close current completion tracks to previous
+  const variation = Math.abs(currDoneRate - prevDoneRate);
+  return +(100 - variation).toFixed(1);
+});
+new Chart(document.getElementById('predChart'),{type:'radar',data:{
+  labels:projOrder,
+  datasets:[{
+    label:'Predictability Score',
+    data:predScores,
+    backgroundColor:C.purple+'30',
+    borderColor:C.purple,
+    borderWidth:2,
+    pointBackgroundColor:predScores.map(v=>v>=70?C.green:v>=50?C.yellow:C.rose),
+    pointRadius:5
+  }]
+},options:{scales:{r:{beginAtZero:true,max:100,grid:{color:'#1e293b'},pointLabels:{color:'#94a3b8',font:{size:11}},ticks:{display:false}}},plugins:{legend:{display:false}}}});
+
+// ===== VELOCITY METRIC CARDS =====
+let velHtml = '';
+projOrder.forEach(p => {
+  const s = sprints[p];
+  const avgVel = ((s.velocity[0]+s.velocity[1])/2).toFixed(0);
+  const predScore = predScores[projOrder.indexOf(p)];
+  velHtml += `<div class="vel-card" style="border-top:2px solid ${s.color}">
+    <div class="proj">${p}</div>
+    <div class="v" style="color:${s.color}">${avgVel}</div>
+    <div class="desc">Avg Issues/Sprint</div>
+    <div style="margin-top:8px;font-size:.7rem">
+      <span style="color:${predScore>=70?C.green:predScore>=50?C.yellow:C.rose}">Predictability: ${predScore.toFixed(0)}%</span>
+      &bull; <span style="color:#475569">Prev: ${s.velocity[0]} &rarr; Cur: ${s.velocity[1]}</span>
+    </div>
+  </div>`;
+});
+document.getElementById('velCards').innerHTML = velHtml;
+
+// ===== QA CHART =====
+new Chart(document.getElementById('qaChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'Ready for QA',data:projOrder.map(p=>sprints[p].readyForQA),backgroundColor:C.cyan},
+    {label:'QA In Progress',data:projOrder.map(p=>sprints[p].qaIP),backgroundColor:C.purple},
+    {label:'Done (QA Passed)',data:projOrder.map(p=>sprints[p].done-sprints[p].readyForQA),backgroundColor:C.green}
+  ]
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:10,font:{size:10}}}}}});
+
+// ===== CRITICAL CHART =====
+const critData = projOrder.map(p=>sprints[p].criticals.filter(c=>c.prio==='P0'||c.prio==='P1').length);
+const blockData = projOrder.map(p=>sprints[p].blocked);
+new Chart(document.getElementById('critChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'P0/P1 Critical',data:critData,backgroundColor:C.red+'cc',borderColor:C.red,borderWidth:1,borderRadius:4},
+    {label:'Blocked',data:blockData,backgroundColor:C.orange+'cc',borderColor:C.orange,borderWidth:1,borderRadius:4}
+  ]
+},options:{scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:12}}}}});
+
+// ===== PRIORITY CHART =====
+new Chart(document.getElementById('prioChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'P0 Blocking',data:[0,1,0,0,0],backgroundColor:C.red},
+    {label:'P1 Critical',data:[0,5,2,1,1],backgroundColor:C.orange},
+    {label:'P2 Major',data:[4,3,10,1,3],backgroundColor:C.yellow},
+    {label:'P3 Minor',data:[12,11,28,21,20],backgroundColor:C.blue}
+  ]
+},options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#111827'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:10,font:{size:10}}}}}});
+
+// ===== WORKLOAD CHART =====
+const allTeam = [];
+projOrder.forEach(p=>{sprints[p].team.forEach(t=>{allTeam.push({name:t.name,proj:p,done:t.done,ip:t.ip,total:t.done+t.ip});});});
+allTeam.sort((a,b)=>b.total-a.total);
+const top12 = allTeam.slice(0,12);
+new Chart(document.getElementById('workChart'),{type:'bar',data:{
+  labels:top12.map(t=>t.name.split(' ').slice(0,2).join(' ')),
+  datasets:[
+    {label:'Done',data:top12.map(t=>t.done),backgroundColor:C.green},
+    {label:'In Progress',data:top12.map(t=>t.ip),backgroundColor:C.yellow}
+  ]
+},options:{indexAxis:'y',scales:{x:{stacked:true,grid:{color:'#111827'},beginAtZero:true},y:{stacked:true,grid:{display:false}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,padding:10,font:{size:10}}}}}});
+
+// ===== RISK TABLE =====
+function pb(p){const m={'P0':['bo','P0'],'P1':['bo','P1'],'P2':['by','P2'],'P3':['bb','P3']};const e=m[p]||['bb',p];return `<span class="badge ${e[0]}">${e[1]}</span>`;}
+function sb(s){const m={'Done':'bg','Ready for QA':'bg','Blocked':'br','To Do':'bb','Dev in Progress':'by','In Progress':'by','Code Review':'by','Ready for Dev':'bb','QA In Progress':'by'};return `<span class="badge ${m[s]||'bb'}">${s}</span>`;}
+
+let riskRows = '';
+projOrder.forEach(p=>{
+  sprints[p].criticals.forEach(c=>{
+    if(c.status!=='Done'){
+      riskRows += `<tr><td><a href="https://blendlabs.atlassian.net/browse/${c.key}" target="_blank" style="color:${sprints[p].color};text-decoration:none;font-weight:600">${c.key}</a></td>
+      <td style="color:${sprints[p].color}">${p}</td>
+      <td style="white-space:normal;max-width:350px">${c.summary}</td>
+      <td>${pb(c.prio)}</td><td>${sb(c.status)}</td><td>${c.assignee}</td></tr>`;
+    }
+  });
+});
+document.querySelector('#riskTable tbody').innerHTML = riskRows;
+
+// ===== TEAM TABLE =====
+let teamRows = '';
+allTeam.forEach(t=>{
+  const pct = t.total?(t.done/t.total*100).toFixed(0):0;
+  teamRows += `<tr><td style="font-weight:600">${t.name}</td><td style="color:${sprints[t.proj].color}">${t.proj}</td>
+    <td style="text-align:center"><span class="badge bg">${t.done}</span></td>
+    <td style="text-align:center"><span class="badge by">${t.ip}</span></td>
+    <td style="text-align:center;font-weight:700">${t.total}</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;border-radius:3px;overflow:hidden;background:#0a0e1a;min-width:60px"><div style="width:${pct}%;height:100%;background:${pct>=70?C.green:pct>=40?C.yellow:C.rose}"></div></div><span style="font-size:.72rem;color:${pct>=70?C.green:pct>=40?C.yellow:C.rose};font-weight:700">${pct}%</span></div></td></tr>`;
+});
+document.querySelector('#teamTable tbody').innerHTML = teamRows;
+document.getElementById('ts').textContent = new Date().toLocaleString();
+</script>
+</body>
+</html>

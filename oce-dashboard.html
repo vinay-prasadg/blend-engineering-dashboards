@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCE Active Tickets Dashboard — Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#070b14;color:#e2e8f0;min-height:100vh}
+.container{max-width:1560px;margin:0 auto;padding:24px}
+header{text-align:center;padding:32px 0 12px;border-bottom:1px solid rgba(239,68,68,.25);margin-bottom:28px}
+header h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#f87171,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
+header p{color:#94a3b8;font-size:.95rem;margin-top:6px}
+.ts{color:#64748b;font-size:.75rem;margin-top:4px}
+
+/* KPI Row */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:28px}
+.kpi{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(239,68,68,.15);border-radius:14px;padding:20px;text-align:center;transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(239,68,68,.12)}
+.kpi .val{font-size:2.1rem;font-weight:800}
+.kpi .lbl{font-size:.78rem;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.kpi.red .val{background:linear-gradient(135deg,#f87171,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.amber .val{background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.green .val{background:linear-gradient(135deg,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.blue .val{background:linear-gradient(135deg,#60a5fa,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.purple .val{background:linear-gradient(135deg,#a78bfa,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.orange .val{background:linear-gradient(135deg,#fb923c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.section-title{font-size:1.15rem;font-weight:700;color:#fca5a5;margin:28px 0 16px;padding-left:12px;border-left:3px solid #ef4444}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}
+
+.card{background:linear-gradient(135deg,#111827 0%,#151c32 100%);border:1px solid rgba(239,68,68,.12);border-radius:14px;padding:22px;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 20px rgba(239,68,68,.08)}
+.card h3{font-size:.95rem;font-weight:600;color:#fca5a5;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h3 .icon{font-size:1.1rem}
+.chart-wrap{position:relative;width:100%;height:280px}
+.chart-wrap.tall{height:340px}
+
+/* Ticket table */
+.ticket-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.78rem}
+.ticket-table th{text-align:left;padding:10px 10px;color:#94a3b8;font-weight:600;text-transform:uppercase;font-size:.68rem;letter-spacing:.5px;border-bottom:1px solid rgba(239,68,68,.15);position:sticky;top:0;background:#111827}
+.ticket-table td{padding:8px 10px;border-bottom:1px solid rgba(239,68,68,.06)}
+.ticket-table tr:hover td{background:rgba(239,68,68,.03)}
+.ticket-table a{color:#f87171;text-decoration:none;font-weight:600;font-size:.78rem}
+.ticket-table a:hover{text-decoration:underline;color:#fca5a5}
+
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.68rem;font-weight:600;white-space:nowrap}
+.badge-p0{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.badge-p1{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.badge-p2{background:rgba(251,191,36,.12);color:#fbbf24}
+.badge-p3{background:rgba(148,163,184,.12);color:#94a3b8}
+.badge-p4{background:rgba(100,116,139,.12);color:#64748b}
+.badge-todo{background:rgba(148,163,184,.15);color:#94a3b8}
+.badge-progress{background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-blocked{background:rgba(248,113,113,.15);color:#f87171}
+.badge-qa{background:rgba(52,211,153,.15);color:#6ee7b7}
+.badge-done{background:rgba(52,211,153,.15);color:#34d399}
+.badge-dev{background:rgba(96,165,250,.15);color:#60a5fa}
+.badge-epd{background:rgba(248,113,113,.12);color:#fca5a5;font-size:.65rem}
+.badge-oce{background:rgba(251,146,60,.15);color:#fb923c;font-size:.65rem}
+
+.scrollable{max-height:420px;overflow-y:auto}
+.scrollable::-webkit-scrollbar{width:5px}
+.scrollable::-webkit-scrollbar-thumb{background:rgba(239,68,68,.25);border-radius:3px}
+
+.project-tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:.68rem;font-weight:700;margin-right:4px}
+.tag-seng{background:rgba(251,146,60,.15);color:#fb923c}
+.tag-cln{background:rgba(96,165,250,.15);color:#60a5fa}
+.tag-cbp{background:rgba(167,139,250,.15);color:#a78bfa}
+.tag-da{background:rgba(52,211,153,.15);color:#34d399}
+.tag-rhl{background:rgba(251,191,36,.15);color:#fbbf24}
+.tag-imb{background:rgba(248,113,113,.15);color:#f87171}
+.tag-dd{background:rgba(52,211,153,.15);color:#34d399}
+.tag-ddindia{background:rgba(34,211,238,.15);color:#22d3ee}
+.tag-other{background:rgba(148,163,184,.12);color:#94a3b8}
+
+.summary-text{color:#cbd5e1;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+footer{text-align:center;padding:24px 0 16px;color:#475569;font-size:.72rem;border-top:1px solid rgba(239,68,68,.1);margin-top:32px}
+
+@media(max-width:1024px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>OCE Active Tickets Dashboard — All Projects</h1>
+  <p>On-Call Engineering &bull; EPD-Logged &bull; Production Issues Tracker | Blend Engineering</p>
+  <div class="ts">DD &bull; DDINDIA &bull; SENG &bull; CLN &bull; CBP &bull; DA &bull; RHL &bull; IMB &bull; APEX &bull; BAI &mdash; Data from JIRA &bull; Generated: <span id="genTime"></span></div>
+</header>
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi red"><div class="val">131</div><div class="lbl">Total Active OCE Tickets</div></div>
+  <div class="kpi orange"><div class="val">42</div><div class="lbl">P0/P1 Critical</div></div>
+  <div class="kpi amber"><div class="val">52</div><div class="lbl">EPD-Logged Issues</div></div>
+  <div class="kpi blue"><div class="val">10</div><div class="lbl">Projects Affected</div></div>
+  <div class="kpi purple"><div class="val">11</div><div class="lbl">In Progress / QA</div></div>
+  <div class="kpi green"><div class="val">7</div><div class="lbl">Ready for QA</div></div>
+</div>
+
+<!-- Charts Row -->
+<div class="section-title">Cross-Project OCE Overview</div>
+<div class="grid-3">
+  <div class="card">
+    <h3><span class="icon">📊</span> Active Tickets by Project</h3>
+    <div class="chart-wrap"><canvas id="projectChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🎯</span> Priority Distribution</h3>
+    <div class="chart-wrap"><canvas id="priorityChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">📈</span> Status Distribution</h3>
+    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">👤</span> Top OCE Assignees (Active Tickets)</h3>
+    <div class="chart-wrap tall"><canvas id="assigneeChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🏷️</span> Ticket Categories</h3>
+    <div class="chart-wrap tall"><canvas id="categoryChart"></canvas></div>
+  </div>
+</div>
+
+<!-- P0/P1 Critical Tickets -->
+<div class="section-title">P0/P1 Critical Tickets — Requires Immediate Attention</div>
+<div class="card">
+  <div class="scrollable">
+    <table class="ticket-table">
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Updated</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13372" target="_blank">CBP-13372</a></td><td><span class="project-tag tag-cbp">CBP</span></td><td class="summary-text">CP enablement stuck nodes for many tenants</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td><td>Feb 2</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13333" target="_blank">CBP-13333</a></td><td><span class="project-tag tag-cbp">CBP</span></td><td class="summary-text">Document upload screen blanks out</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td><td>Feb 4</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13234" target="_blank">CBP-13234</a></td><td><span class="project-tag tag-cbp">CBP</span></td><td class="summary-text">Builder Component Enhancements and Bugfixes Q1 2026</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td><td>Shimrit Yacobi</td><td>Jan 13</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-11817" target="_blank">CBP-11817</a></td><td><span class="project-tag tag-cbp">CBP</span></td><td class="summary-text">Step-up screen issue: page not loading, bcu, DA</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-blocked">Blocked</span></td><td>Kellis Liang</td><td>Feb 24</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-7059" target="_blank">CBP-7059</a></td><td><span class="project-tag tag-cbp">CBP</span></td><td class="summary-text">Investigate lending module registry not having correct data</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Kevin Wang</td><td>Dec 2</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-260" target="_blank">CLN-260</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">TeachersFCU - Vehicle details duplicated on Review & submit</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-245" target="_blank">CLN-245</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">TeachersFCU - Payload missing collateral information</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Kalpana Sharma</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-237" target="_blank">CLN-237</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">BMO PL: Store credit pull status for frozen credit</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td><td>Suyog Bhatia</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-221" target="_blank">CLN-221</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">Align PLv6 Application Data with Blend Schema for MISMO</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Sathish Krishnan</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-215" target="_blank">CLN-215</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">TeachersFCU - App stuck when same email for co-applicant</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Suyog Bhatia</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-193" target="_blank">CLN-193</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">BMO PL - Only latest residency history considered in DMS</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Bukka V Reddy</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-190" target="_blank">CLN-190</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">BMO PL: Expand CB Credit Hard Pull Request Payload</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Bukka V Reddy</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-188" target="_blank">CLN-188</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">BMO PL - Support eSign Followups</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Eduardo Angeles</td><td>Feb 11</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-185" target="_blank">CLN-185</a></td><td><span class="project-tag tag-cln">CLN</span></td><td class="summary-text">PL - Debt consolidation not appearing when config enabled</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-blocked">Blocked</span></td><td>Suyog Bhatia</td><td>Feb 11</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DD & DDINDIA Tickets -->
+<div class="section-title">DD &amp; DDINDIA — Documents &amp; Delivery OCE Issues</div>
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">📄</span> DD — Documents &amp; Delivery <span class="badge badge-epd" style="margin-left:auto">30 active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3514" target="_blank">DD-3514</a></td><td class="summary-text">[QA] Updates to eSign Custom Follow-ups &amp; Disclosures in CP</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Rebecca Garcia</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3522" target="_blank">DD-3522</a></td><td class="summary-text">Manual Follow-ups not working for CP V5 PL &amp; CC Templates</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-4079" target="_blank">DD-4079</a></td><td class="summary-text">Inconsistent Scheduling Task, uwcreditunion</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-progress">In Progress</span></td><td>Mukesh Jha</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3836" target="_blank">DD-3836</a></td><td class="summary-text">TPRs not receiving eClosing Disclosure Emails</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Armani Chien</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3810" target="_blank">DD-3810</a></td><td class="summary-text">Followups API response validation error</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Ya He</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3803" target="_blank">DD-3803</a></td><td class="summary-text">Could not access borrowers Identity Documents in Signing</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Jacob Powers</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3726" target="_blank">DD-3726</a></td><td class="summary-text">Disclosures messages table growing rapidly in size</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Jacob Powers</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3517" target="_blank">DD-3517</a></td><td class="summary-text">Users unable to access Email Reminders</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Will Duan</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-3349" target="_blank">DD-3349</a></td><td class="summary-text">Error from downstream - Adverse Action Notice Disclosure</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Will Duan</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-2892" target="_blank">DD-2892</a></td><td class="summary-text">Documents service PII in non-restricted logs</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Will Duan</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DD-2859" target="_blank">DD-2859</a></td><td class="summary-text">eSign follow-up creation fails — TPR logic issue</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">Ready for Dev</span></td><td>Rafael Ochoa</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:8px 10px;color:#64748b;font-size:.72rem">+ 19 more DD on-call tickets (Jacob Powers: 10, Ya He: 8, Adjoa: 3, Will Duan: 3)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🇮🇳</span> DDINDIA — Documents &amp; Delivery India <span class="badge badge-epd" style="margin-left:auto">8 active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-548" target="_blank">DDINDIA-548</a></td><td class="summary-text">Truist MOA not recognizing ICD viewed by clients</td><td><span class="badge badge-p2">P2</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Gaurav Kumar</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-555" target="_blank">DDINDIA-555</a></td><td class="summary-text">4506C document prompting primary borrower as co-borrower</td><td><span class="badge badge-p2">P2</span></td><td><span class="badge badge-blocked">Blocked</span></td><td>Kumar Utkarsh</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-302" target="_blank">DDINDIA-302</a></td><td class="summary-text">Penfed — Borrower unhandled server error on disclosures</td><td><span class="badge badge-p2">P2</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Amod Kumar</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-558" target="_blank">DDINDIA-558</a></td><td class="summary-text">LOE Large Deposits document issue — BMO</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Kumar Utkarsh</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-300" target="_blank">DDINDIA-300</a></td><td class="summary-text">Loan Estimate not showing in OneSpan — Taylor Morrison</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-dev">Dev In Progress</span></td><td>Monilkumar Suthar</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-93" target="_blank">DDINDIA-93</a></td><td class="summary-text">W2 Followup — DocAI not verifying on first pass</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td><td>Harikrishnan M</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-91" target="_blank">DDINDIA-91</a></td><td class="summary-text">Failed to verify document on first upload after consent</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DDINDIA-88" target="_blank">DDINDIA-88</a></td><td class="summary-text">W-2 &amp; Paystub Follow-ups vanished from Task list</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- EPD-Logged Tickets -->
+<div class="section-title">EPD-Logged Production Issues — By Project</div>
+<div class="grid-2">
+  <!-- SENG EPD -->
+  <div class="card">
+    <h3><span class="icon">🔧</span> SENG — Solution Engineering <span class="badge badge-epd" style="margin-left:auto">20 active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2019" target="_blank">SENG-2019</a></td><td class="summary-text">Citizens CC: Employment status retains old values</td><td><span class="badge badge-todo">To Do</span></td><td>Fernando A S</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1849" target="_blank">SENG-1849</a></td><td class="summary-text">C1B - Application Complete but Booking failed</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1843" target="_blank">SENG-1843</a></td><td class="summary-text">Enterprise: no warning before withdrawing app</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1839" target="_blank">SENG-1839</a></td><td class="summary-text">Enterprise: Withdrawn apps duplicate drop down</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1832" target="_blank">SENG-1832</a></td><td class="summary-text">Login to account takes to wrong environment</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1827" target="_blank">SENG-1827</a></td><td class="summary-text">Enterprise: App summary state field issue</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1823" target="_blank">SENG-1823</a></td><td class="summary-text">Enterprise: Update doc review button disabled</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1822" target="_blank">SENG-1822</a></td><td class="summary-text">Enterprise: Remove identity section when N/A</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1820" target="_blank">SENG-1820</a></td><td class="summary-text">Enterprise: App progress pages duplicated on edit</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-1819" target="_blank">SENG-1819</a></td><td class="summary-text">Consumer stuck on manual review after booking error</td><td><span class="badge badge-todo">To Do</span></td><td>Omar Aparicio</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-649" target="_blank">SENG-649</a></td><td class="summary-text">Consumer sees approved, banker sees VOID</td><td><span class="badge badge-todo">To Do</span></td><td>Bryan Bottorff</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-300" target="_blank">SENG-300</a></td><td class="summary-text">Application with Amp card results into VOID</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DA + RHL EPD -->
+  <div class="card">
+    <h3><span class="icon">🏦</span> DA / RHL — Deposit Accounts & Rapid HL <span class="badge badge-epd" style="margin-left:auto">13 active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Status</th><th>Assignee</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1612" target="_blank">DA-1612</a></td><td class="summary-text">Teachers FCU - Update warning message verbiage</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1418" target="_blank">DA-1418</a></td><td class="summary-text">DA V12 - minorBirthDate field never updated</td><td><span class="badge badge-qa">QA In Progress</span></td><td>Richard Gau</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1408" target="_blank">DA-1408</a></td><td class="summary-text">DA v12 - Bug bash: Inconsistency on selects</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1378" target="_blank">DA-1378</a></td><td class="summary-text">Incorrect wording of Error for missing address</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-961" target="_blank">DA-961</a></td><td class="summary-text">TFCU - Inviting applicant to fund before submit</td><td><span class="badge badge-qa">QA In Progress</span></td><td>Manikanta Reddy</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1875" target="_blank">RHL-1875</a></td><td class="summary-text">Lender Intake: Set Borrower Sync Data issue</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1833" target="_blank">RHL-1833</a></td><td class="summary-text">Base Tenant: Military income fields not patched</td><td><span class="badge badge-todo">To Do</span></td><td>Ku Kim</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1822" target="_blank">RHL-1822</a></td><td class="summary-text">Lender: Exploring debt consolidation - app error</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1808" target="_blank">RHL-1808</a></td><td class="summary-text">Mismatch in declaration questions</td><td><span class="badge badge-todo">To Do</span></td><td>Unassigned</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1800" target="_blank">RHL-1800</a></td><td class="summary-text">Borrower App Message Revision</td><td><span class="badge badge-todo">To Do</span></td><td>Uma Konappalli</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1777" target="_blank">RHL-1777</a></td><td class="summary-text">Lender Guided Flow: Duplicate liabilities on UI</td><td><span class="badge badge-todo">To Do</span></td><td>Ku Kim</td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-1659" target="_blank">RHL-1659</a></td><td class="summary-text">Credit Limit Slider: Incorrect validation msg</td><td><span class="badge badge-blocked">Blocked</span></td><td>Yanyu Chen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CLN & CBP Active Bugs -->
+<div class="section-title">CLN &amp; CBP — Active Bugs &amp; Issues</div>
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">💳</span> CLN — Consumer Lending <span class="badge badge-epd" style="margin-left:auto">18 active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-260" target="_blank">CLN-260</a></td><td class="summary-text">TFCU VL - Vehicle details duplicated</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-259" target="_blank">CLN-259</a></td><td class="summary-text">TFCU - Debt Consolidation trade line gap</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-253" target="_blank">CLN-253</a></td><td class="summary-text">CC - App status not updated by IDV results</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-252" target="_blank">CLN-252</a></td><td class="summary-text">PL Enterprise - Co-applicant consent missing</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-251" target="_blank">CLN-251</a></td><td class="summary-text">VL - Inconsistent vehicle details options</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-249" target="_blank">CLN-249</a></td><td class="summary-text">CC - Review screen not shown before submit</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-248" target="_blank">CLN-248</a></td><td class="summary-text">PLv6: areBorrowersMarried checks primary only</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-245" target="_blank">CLN-245</a></td><td class="summary-text">TFCU Auto - Missing collateral info</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-dev">Dev</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-134" target="_blank">CLN-134</a></td><td class="summary-text">CC V5 - Promo code appears twice for cross sell</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CLN-105" target="_blank">CLN-105</a></td><td class="summary-text">V6 Bug - Blank page for upload ID (Socure)</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-dev">Dev</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏗️</span> CBP — Builder Platform <span class="badge badge-epd" style="margin-left:auto">35+ active</span></h3>
+    <div class="scrollable" style="max-height:340px">
+      <table class="ticket-table">
+        <thead><tr><th>Key</th><th>Summary</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13387" target="_blank">CBP-13387</a></td><td class="summary-text">Subworkflow: TextInput in loop incorrect value</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13386" target="_blank">CBP-13386</a></td><td class="summary-text">Subworkflows: Text input not refreshed</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13384" target="_blank">CBP-13384</a></td><td class="summary-text">Mismatch in terraform roles configuration</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-dev">Dev</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13372" target="_blank">CBP-13372</a></td><td class="summary-text">CP enablement stuck nodes - many tenants</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13349" target="_blank">CBP-13349</a></td><td class="summary-text">Not able to open sub workflow view-only</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13333" target="_blank">CBP-13333</a></td><td class="summary-text">Document upload screen blanks out</td><td><span class="badge badge-p1">P1</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13227" target="_blank">CBP-13227</a></td><td class="summary-text">Block name not updated on Update block</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-12877" target="_blank">CBP-12877</a></td><td class="summary-text">Submit button slides from top in loop container</td><td><span class="badge badge-p4">P4</span></td><td><span class="badge badge-blocked">Blocked</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-12197" target="_blank">CBP-12197</a></td><td class="summary-text">Cannot mark NPS score feedback as optional</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-dev">Dev</span></td></tr>
+          <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-11951" target="_blank">CBP-11951</a></td><td class="summary-text">Adding label for slider shows two labels</td><td><span class="badge badge-p3">P3</span></td><td><span class="badge badge-todo">To Do</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  OCE Active Tickets Dashboard &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; Labels: EPD-logged, OCE, on-call-form, Customer-QA, documents-and-delivery-oncall &bull; Projects: DD, DDINDIA, SENG, CLN, CBP, DA, RHL, IMB, APEX, BAI &bull; Generated: <span id="genTime2"></span>
+</footer>
+</div>
+
+<script>
+document.getElementById('genTime').textContent = new Date().toLocaleString();
+document.getElementById('genTime2').textContent = new Date().toLocaleString();
+
+const red='#f87171',orange='#fb923c',amber='#fbbf24',emerald='#34d399',sky='#60a5fa',purple='#a78bfa',slate='#94a3b8';
+Chart.defaults.color='#94a3b8';Chart.defaults.borderColor='rgba(239,68,68,0.06)';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+
+// Active Tickets by Project - Horizontal Bar
+new Chart(document.getElementById('projectChart'),{
+  type:'bar',
+  data:{
+    labels:['CBP','DD','SENG','CLN','DDINDIA','RHL','DA','APEX','BAI','IMB'],
+    datasets:[{
+      label:'Active Tickets',
+      data:[35,30,20,18,8,8,6,1,1,1],
+      backgroundColor:['rgba(167,139,250,.7)','rgba(52,211,153,.7)','rgba(251,146,60,.7)','rgba(96,165,250,.7)','rgba(34,211,238,.7)','rgba(251,191,36,.7)','rgba(52,211,153,.5)','rgba(248,113,113,.5)','rgba(148,163,184,.5)','rgba(248,113,113,.7)'],
+      borderWidth:0,borderRadius:4
+    }]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{display:false},beginAtZero:true},y:{grid:{display:false}}},
+    plugins:{legend:{display:false}}}
+});
+
+// Priority Distribution - Doughnut
+new Chart(document.getElementById('priorityChart'),{
+  type:'doughnut',
+  data:{
+    labels:['P0 (Blocking)','P1 (Critical)','P2 (Major)','P3 (Minor)','P4 (Trivial)'],
+    datasets:[{data:[2,40,6,68,15],
+      backgroundColor:['rgba(248,113,113,.85)','rgba(251,146,60,.8)','rgba(251,191,36,.7)','rgba(148,163,184,.6)','rgba(100,116,139,.4)'],
+      borderWidth:0,hoverOffset:8}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{position:'right',labels:{padding:12,usePointStyle:true,pointStyleWidth:10,font:{size:10}}}}}
+});
+
+// Status Distribution - Doughnut
+new Chart(document.getElementById('statusChart'),{
+  type:'doughnut',
+  data:{
+    labels:['To Do','Ready for Dev','Dev In Progress','QA In Progress','Ready for QA','Blocked'],
+    datasets:[{data:[30,47,20,5,7,5],
+      backgroundColor:['rgba(148,163,184,.65)','rgba(148,163,184,.45)','rgba(96,165,250,.7)','rgba(52,211,153,.7)','rgba(52,211,153,.5)','rgba(248,113,113,.7)'],
+      borderWidth:0,hoverOffset:8}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{position:'right',labels:{padding:12,usePointStyle:true,pointStyleWidth:10,font:{size:10}}}}}
+});
+
+// Top Assignees - Bar
+new Chart(document.getElementById('assigneeChart'),{
+  type:'bar',
+  data:{
+    labels:['Omar Aparicio','Jacob Powers','Ya He','Gaurav Kumar','Kumar Utkarsh','Suyog Bhatia','Shreshth Malik','Sathish Krishnan','Bukka V Reddy','Adjoa Quansah','Will Duan','Amod Kumar'],
+    datasets:[{
+      label:'Active Tickets',
+      data:[12,10,8,8,7,4,4,3,3,3,3,2],
+      backgroundColor:['rgba(251,146,60,.7)','rgba(52,211,153,.7)','rgba(52,211,153,.6)','rgba(52,211,153,.5)','rgba(34,211,238,.6)','rgba(96,165,250,.7)','rgba(167,139,250,.7)','rgba(96,165,250,.6)','rgba(96,165,250,.5)','rgba(52,211,153,.4)','rgba(52,211,153,.35)','rgba(34,211,238,.5)'],
+      borderWidth:0,borderRadius:4
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{display:false},ticks:{font:{size:8.5},maxRotation:45}},y:{grid:{color:'rgba(239,68,68,.05)'},beginAtZero:true}},
+    plugins:{legend:{display:false}}}
+});
+
+// Ticket Categories - Polar Area
+new Chart(document.getElementById('categoryChart'),{
+  type:'polarArea',
+  data:{
+    labels:['EPD-Logged','P1 Bugs','DD On-Call','Enterprise UI','DDINDIA On-Call','OCE On-Call','DA V12 Issues','Config/Template','Customer-QA','Subworkflow Bugs'],
+    datasets:[{data:[52,42,30,12,8,4,6,5,2,3],
+      backgroundColor:['rgba(248,113,113,.55)','rgba(251,146,60,.55)','rgba(52,211,153,.55)','rgba(96,165,250,.55)','rgba(34,211,238,.55)','rgba(251,191,36,.55)','rgba(167,139,250,.55)','rgba(251,146,60,.4)','rgba(52,211,153,.4)','rgba(148,163,184,.4)'],
+      borderWidth:1,borderColor:'rgba(239,68,68,.15)'}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{r:{grid:{color:'rgba(239,68,68,.06)'},ticks:{display:false}}},
+    plugins:{legend:{position:'right',labels:{padding:10,usePointStyle:true,pointStyleWidth:8,font:{size:9}}}}}
+});
+</script>
+</body>
+</html>

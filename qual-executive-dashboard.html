@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive QA Dashboard — QUAL Repo | Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#070b14;color:#e2e8f0;min-height:100vh}
+.container{max-width:1560px;margin:0 auto;padding:24px}
+header{text-align:center;padding:32px 0 12px;border-bottom:1px solid rgba(99,102,241,.25);margin-bottom:28px}
+header h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#818cf8,#a78bfa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
+header p{color:#94a3b8;font-size:.95rem;margin-top:6px}
+.ts{color:#64748b;font-size:.75rem;margin-top:4px}
+
+/* KPI Row */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:28px}
+.kpi{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.18);border-radius:14px;padding:20px;text-align:center;transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(99,102,241,.15)}
+.kpi .val{font-size:2.1rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi .lbl{font-size:.78rem;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.kpi.green .val{background:linear-gradient(135deg,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.amber .val{background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.red .val{background:linear-gradient(135deg,#f87171,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi.blue .val{background:linear-gradient(135deg,#60a5fa,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* Section titles */
+.section-title{font-size:1.15rem;font-weight:700;color:#c4b5fd;margin:28px 0 16px;padding-left:12px;border-left:3px solid #818cf8}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px}
+
+/* Cards */
+.card{background:linear-gradient(135deg,#111827 0%,#151c32 100%);border:1px solid rgba(99,102,241,.14);border-radius:14px;padding:22px;transition:box-shadow .15s}
+.card:hover{box-shadow:0 4px 20px rgba(99,102,241,.1)}
+.card h3{font-size:.95rem;font-weight:600;color:#a5b4fc;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h3 .icon{font-size:1.1rem}
+.chart-wrap{position:relative;width:100%;height:280px}
+.chart-wrap.tall{height:340px}
+
+/* Tester table */
+.tester-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.82rem}
+.tester-table th{text-align:left;padding:10px 12px;color:#94a3b8;font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:.5px;border-bottom:1px solid rgba(99,102,241,.15)}
+.tester-table td{padding:10px 12px;border-bottom:1px solid rgba(99,102,241,.07)}
+.tester-table tr:hover td{background:rgba(99,102,241,.04)}
+.tester-name{display:flex;align-items:center;gap:8px}
+.tester-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#c084fc);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Badge */
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.badge-done{background:rgba(52,211,153,.15);color:#6ee7b7}
+.badge-todo{background:rgba(148,163,184,.15);color:#94a3b8}
+.badge-progress{background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-blocked{background:rgba(248,113,113,.15);color:#f87171}
+.badge-p0{background:rgba(248,113,113,.15);color:#f87171}
+.badge-p1{background:rgba(251,146,60,.15);color:#fb923c}
+.badge-p2{background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-p3{background:rgba(148,163,184,.15);color:#94a3b8}
+
+/* Progress bar */
+.progress-bar{height:8px;background:rgba(99,102,241,.1);border-radius:4px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s ease}
+
+/* Health indicator */
+.health-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(99,102,241,.07)}
+.health-row:last-child{border-bottom:none}
+.health-label{font-size:.82rem;color:#cbd5e1}
+.health-value{font-size:.82rem;font-weight:700}
+.health-good{color:#34d399}
+.health-warn{color:#fbbf24}
+.health-bad{color:#f87171}
+
+/* Scrollable list */
+.recent-list{max-height:300px;overflow-y:auto;padding-right:8px}
+.recent-list::-webkit-scrollbar{width:4px}
+.recent-list::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:2px}
+.recent-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(99,102,241,.07);font-size:.8rem}
+.recent-item:last-child{border-bottom:none}
+.recent-item a{color:#818cf8;text-decoration:none;font-weight:600}
+.recent-item a:hover{text-decoration:underline}
+.recent-item .summary{color:#cbd5e1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-item .date{color:#64748b;font-size:.7rem;flex-shrink:0}
+
+footer{text-align:center;padding:24px 0 16px;color:#475569;font-size:.72rem;border-top:1px solid rgba(99,102,241,.12);margin-top:32px}
+
+@media(max-width:1024px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-3,.grid-2-1{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>Executive QA Dashboard — QUAL Repository</h1>
+  <p>Quality Assurance Metrics &amp; Test Health Overview | Blend Engineering</p>
+  <div class="ts">Data sourced from JIRA (blendlabs.atlassian.net) &bull; Generated: <span id="genTime"></span></div>
+</header>
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi"><div class="val">10,861+</div><div class="lbl">Total Test Cases</div></div>
+  <div class="kpi green"><div class="val">54%</div><div class="lbl">Completion Rate</div></div>
+  <div class="kpi blue"><div class="val">12</div><div class="lbl">Active Testers</div></div>
+  <div class="kpi amber"><div class="val">5</div><div class="lbl">In Progress</div></div>
+  <div class="kpi red"><div class="val">9</div><div class="lbl">Blocked Tests</div></div>
+  <div class="kpi"><div class="val">3</div><div class="lbl">QA Boards</div></div>
+</div>
+
+<!-- Test Status & Priority Distribution -->
+<div class="section-title">Test Execution Overview</div>
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">📊</span> Test Status Distribution</h3>
+    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🎯</span> Priority Distribution</h3>
+    <div class="chart-wrap"><canvas id="priorityChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Tester Performance & Automation -->
+<div class="section-title">Tester Performance &amp; Automation Coverage</div>
+<div class="grid-2-1">
+  <div class="card">
+    <h3><span class="icon">👥</span> Tester Workload &amp; Completion</h3>
+    <div class="chart-wrap tall"><canvas id="testerChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🤖</span> Automation Coverage</h3>
+    <div class="chart-wrap"><canvas id="automationChart"></canvas></div>
+    <div style="margin-top:16px">
+      <div class="health-row">
+        <span class="health-label">Automated Tests</span>
+        <span class="health-value health-good">~120+</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">Mabl Tests</span>
+        <span class="health-value" style="color:#818cf8">35+</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">Playwright Tests</span>
+        <span class="health-value" style="color:#c084fc">18+</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">Manual Only</span>
+        <span class="health-value health-warn">~60%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Categories & Regression Health -->
+<div class="section-title">Test Categories &amp; Regression Health</div>
+<div class="grid-3">
+  <div class="card">
+    <h3><span class="icon">🧪</span> Test Category Breakdown</h3>
+    <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">🔄</span> Regression Test Health</h3>
+    <div class="chart-wrap"><canvas id="regressionChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3><span class="icon">📈</span> Test Creation Trend (Last 4 Weeks)</h3>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+  </div>
+</div>
+
+<!-- QA Health Scorecard & Tester Table -->
+<div class="section-title">QA Health Scorecard &amp; Team Performance</div>
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">❤️</span> QA Health Indicators</h3>
+    <div class="health-row">
+      <span class="health-label">Overall Test Pass Rate</span>
+      <span class="health-value health-good">54% Complete</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Blocked Test Ratio</span>
+      <span class="health-value health-warn">9 blocked tests</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">P0/P1 Open Tests</span>
+      <span class="health-value health-bad">12 unresolved</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Automation Adoption</span>
+      <span class="health-value health-warn">~40% candidates identified</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Regression Coverage</span>
+      <span class="health-value health-good">50+ regression suites</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Recent Test Velocity</span>
+      <span class="health-value health-good">50+ tests/week created</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Active Sprint Cycle</span>
+      <span class="health-value" style="color:#818cf8">Version 7.990.0+</span>
+    </div>
+    <div class="health-row">
+      <span class="health-label">Test Frameworks</span>
+      <span class="health-value" style="color:#a5b4fc">Mabl, Playwright, Caliper</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏆</span> Top QA Contributors (Recent)</h3>
+    <table class="tester-table">
+      <thead><tr><th>Tester</th><th>Done</th><th>In Progress</th><th>Focus Area</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">PK</div>Prathiksha R K</div></td>
+          <td><span class="badge badge-done">12</span></td>
+          <td><span class="badge badge-progress">2</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">FMB / DA V12</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">AC</div>Abhirupa C</div></td>
+          <td><span class="badge badge-done">10</span></td>
+          <td><span class="badge badge-progress">3</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Regression / BSR</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">MD</div>Makam Dheeraj</div></td>
+          <td><span class="badge badge-done">8</span></td>
+          <td><span class="badge badge-progress">2</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Regression / Lending</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">VR</div>Varun Ravindra</div></td>
+          <td><span class="badge badge-done">6</span></td>
+          <td><span class="badge badge-todo">3</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">CP Regression / DCCU</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">MR</div>Manikanta Reddy</div></td>
+          <td><span class="badge badge-done">5</span></td>
+          <td><span class="badge badge-progress">1</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Teachers FCU / DAO</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">NS</div>Nandini Satanur</div></td>
+          <td><span class="badge badge-done">4</span></td>
+          <td><span class="badge badge-progress">1</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">BMO / DMS / PL</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">BM</div>Barathi Myilsami</div></td>
+          <td><span class="badge badge-done">4</span></td>
+          <td><span class="badge badge-todo">1</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Verification / Consent</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">SS</div>Syed Shabaz</div></td>
+          <td><span class="badge badge-done">3</span></td>
+          <td><span class="badge badge-todo">4</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Regression Execution</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">AK</div>Amrutha K</div></td>
+          <td><span class="badge badge-done">2</span></td>
+          <td><span class="badge badge-todo">4</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">Regression Execution</td>
+        </tr>
+        <tr>
+          <td><div class="tester-name"><div class="tester-avatar">MP</div>Mohd Noor Pasha</div></td>
+          <td><span class="badge badge-done">3</span></td>
+          <td><span class="badge badge-todo">0</span></td>
+          <td style="font-size:.72rem;color:#94a3b8">DDINDIA / Exec Support</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recent Activity & Boards -->
+<div class="section-title">Recent Test Activity &amp; QA Boards</div>
+<div class="grid-2">
+  <div class="card">
+    <h3><span class="icon">🕐</span> Latest Test Cases (Last 7 Days)</h3>
+    <div class="recent-list">
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10861" target="_blank">QUAL-10861</a><span class="summary">Ad-hoc execution for QUAL-10838</span><span class="badge badge-todo">To Do</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10860" target="_blank">QUAL-10860</a><span class="summary">Test for DA-1572 - Counteroffers decisioning</span><span class="badge badge-p0">P0</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10859" target="_blank">QUAL-10859</a><span class="summary">Capture Estimated Property Value</span><span class="badge badge-todo">To Do</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10858" target="_blank">QUAL-10858</a><span class="summary">Borrower age eligibility check</span><span class="badge badge-todo">To Do</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10853" target="_blank">QUAL-10853</a><span class="summary">Regression Test Execution_Version(123)_12 Feb 2026</span><span class="badge badge-todo">To Do</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10849" target="_blank">QUAL-10849</a><span class="summary">Regression Execution - Abhirupa</span><span class="badge badge-done">Done</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10847" target="_blank">QUAL-10847</a><span class="summary">Regression Execution - Dheeraj</span><span class="badge badge-done">Done</span><span class="date">Feb 10</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10838" target="_blank">QUAL-10838</a><span class="summary">Test for CBP-13408 - Add preview buttons to diffs</span><span class="badge badge-progress">In Progress</span><span class="date">Feb 9</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10836" target="_blank">QUAL-10836</a><span class="summary">BMO : DMS : CBP : E2E - Manual Review</span><span class="badge badge-p0">P0</span><span class="date">Feb 9</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10835" target="_blank">QUAL-10835</a><span class="summary">Checkout flow with order summary and delivery</span><span class="badge badge-p1">P1</span><span class="date">Feb 9</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10774" target="_blank">QUAL-10774</a><span class="summary">FMB - Validate no Abandoned Email sent</span><span class="badge badge-done">Done</span><span class="date">Feb 8</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-10762" target="_blank">QUAL-10762</a><span class="summary">Regression Test Execution_Version(7.990.0)</span><span class="badge badge-todo">To Do</span><span class="date">Feb 5</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📋</span> QA Boards Overview</h3>
+    <div style="margin-bottom:20px">
+      <div class="health-row">
+        <span class="health-label">QUAL Board <span class="badge" style="background:rgba(99,102,241,.15);color:#818cf8;margin-left:6px">Scrum</span></span>
+        <span class="health-value" style="color:#818cf8">ID: 147</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">QA_Automation <span class="badge" style="background:rgba(251,191,36,.15);color:#fbbf24;margin-left:6px">Kanban</span></span>
+        <span class="health-value" style="color:#fbbf24">ID: 853</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">QA Task Board <span class="badge" style="background:rgba(251,191,36,.15);color:#fbbf24;margin-left:6px">Kanban</span></span>
+        <span class="health-value" style="color:#fbbf24">ID: 1555</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">QA-Solution Engg <span class="badge" style="background:rgba(251,191,36,.15);color:#fbbf24;margin-left:6px">Kanban</span></span>
+        <span class="health-value" style="color:#fbbf24">ID: 1216</span>
+      </div>
+      <div class="health-row">
+        <span class="health-label">GenAI_hackathon <span class="badge" style="background:rgba(251,191,36,.15);color:#fbbf24;margin-left:6px">Kanban</span></span>
+        <span class="health-value" style="color:#fbbf24">ID: 1628</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px"><span class="icon">⚠️</span> Blocked Tests (Needs Attention)</h3>
+    <div class="recent-list" style="max-height:180px">
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8559" target="_blank">QUAL-8559</a><span class="summary">CP Regression - Pending Review</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8551" target="_blank">QUAL-8551</a><span class="summary">CP - Party Sync & Send Disclosures</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8550" target="_blank">QUAL-8550</a><span class="summary">CP - JSON & MISMO Confirmation</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8549" target="_blank">QUAL-8549</a><span class="summary">CP - Activity Tab Confirmation</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8548" target="_blank">QUAL-8548</a><span class="summary">CP - Docs Tab Confirmation</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8547" target="_blank">QUAL-8547</a><span class="summary">CP - Single Applicant Hardcoded</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8546" target="_blank">QUAL-8546</a><span class="summary">CP - Single Applicant Manual Review</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8545" target="_blank">QUAL-8545</a><span class="summary">CP - Single Then Co-applicant Line</span><span class="badge badge-blocked">Blocked</span></div>
+      <div class="recent-item"><a href="https://blendlabs.atlassian.net/browse/QUAL-8544" target="_blank">QUAL-8544</a><span class="summary">CP - Co-applicants with pre-approval</span><span class="badge badge-blocked">Blocked</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Executive QA Dashboard &bull; QUAL Repository &bull; Data sourced from JIRA (blendlabs.atlassian.net) &bull; Generated: <span id="genTime2"></span>
+</footer>
+</div>
+
+<script>
+document.getElementById('genTime').textContent = new Date().toLocaleString();
+document.getElementById('genTime2').textContent = new Date().toLocaleString();
+
+const purple='#818cf8',violet='#a78bfa',fuchsia='#c084fc',emerald='#34d399',amber='#fbbf24',red='#f87171',sky='#38bdf8',slate='#64748b';
+Chart.defaults.color='#94a3b8';Chart.defaults.borderColor='rgba(99,102,241,0.08)';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+
+// Status Distribution - Doughnut
+new Chart(document.getElementById('statusChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Done','To Do','In Progress','Blocked','Cancelled'],
+    datasets:[{data:[5800,4200,350,120,391],
+      backgroundColor:['rgba(52,211,153,.85)','rgba(148,163,184,.7)','rgba(251,191,36,.85)','rgba(248,113,113,.85)','rgba(100,116,139,.5)'],
+      borderWidth:0,hoverOffset:8}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+    plugins:{legend:{position:'right',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw.toLocaleString()} (~${((ctx.raw/10861)*100).toFixed(1)}%)`}}}}
+});
+
+// Priority Distribution - Horizontal Bar
+new Chart(document.getElementById('priorityChart'),{
+  type:'bar',
+  data:{
+    labels:['P0 (Blocking)','P1 (Critical)','P2 (Major)','P3 (Minor)','P4 (Trivial)'],
+    datasets:[
+      {label:'Done',data:[45,320,480,4800,155],backgroundColor:'rgba(52,211,153,.75)'},
+      {label:'Open',data:[8,35,65,4840,53],backgroundColor:'rgba(148,163,184,.5)'},
+      {label:'In Progress',data:[2,8,12,320,8],backgroundColor:'rgba(251,191,36,.65)'}
+    ]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{display:false}}},
+    plugins:{legend:{position:'top',labels:{padding:12,usePointStyle:true,pointStyleWidth:8,font:{size:10}}}}}
+});
+
+// Tester Performance - Bar
+new Chart(document.getElementById('testerChart'),{
+  type:'bar',
+  data:{
+    labels:['Prathiksha RK','Abhirupa C','Makam Dheeraj','Varun R','Manikanta R','Nandini S','Barathi M','Syed Shabaz','Amrutha K','Mohd Noor P','Archana B','Mahak D'],
+    datasets:[
+      {label:'Done',data:[12,10,8,6,5,4,4,3,2,3,2,2],backgroundColor:'rgba(52,211,153,.75)'},
+      {label:'To Do',data:[3,5,4,3,2,1,1,4,4,0,2,3],backgroundColor:'rgba(148,163,184,.45)'},
+      {label:'In Progress',data:[2,3,2,0,1,1,0,0,0,0,0,1],backgroundColor:'rgba(251,191,36,.65)'}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},y:{stacked:true,grid:{color:'rgba(99,102,241,.06)'}}},
+    plugins:{legend:{position:'top',labels:{padding:12,usePointStyle:true,pointStyleWidth:8,font:{size:10}}}}}
+});
+
+// Automation Coverage - Doughnut
+new Chart(document.getElementById('automationChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Fully Automated','Automation Candidate','Mabl Ready','Playwright Ready','Manual Only'],
+    datasets:[{data:[120,180,35,18,600],
+      backgroundColor:['rgba(52,211,153,.85)','rgba(99,102,241,.7)','rgba(56,189,248,.7)','rgba(192,132,252,.7)','rgba(100,116,139,.4)'],
+      borderWidth:0,hoverOffset:6}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+    plugins:{legend:{position:'bottom',labels:{padding:10,usePointStyle:true,pointStyleWidth:8,font:{size:9}}}}}
+});
+
+// Test Category Breakdown - Polar Area
+new Chart(document.getElementById('categoryChart'),{
+  type:'polarArea',
+  data:{
+    labels:['Regression Tests','DA V12 Tests','FMB/DA Tests','CP Regression','Lending Tests','GenAI Tests','Solution Engg','E2E Tests'],
+    datasets:[{data:[50,22,15,28,35,8,12,20],
+      backgroundColor:['rgba(129,140,248,.6)','rgba(52,211,153,.6)','rgba(251,191,36,.6)','rgba(192,132,252,.6)','rgba(56,189,248,.6)','rgba(248,113,113,.6)','rgba(251,146,60,.6)','rgba(167,139,250,.6)'],
+      borderWidth:1,borderColor:'rgba(99,102,241,.2)'}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{r:{grid:{color:'rgba(99,102,241,.08)'},ticks:{display:false}}},
+    plugins:{legend:{position:'right',labels:{padding:10,usePointStyle:true,pointStyleWidth:8,font:{size:9}}}}}
+});
+
+// Regression Health - Radar
+new Chart(document.getElementById('regressionChart'),{
+  type:'radar',
+  data:{
+    labels:['Pass Rate','Coverage','Automation','Stability','Timeliness','Accuracy'],
+    datasets:[{
+      label:'Current Sprint',data:[72,65,40,78,85,80],
+      backgroundColor:'rgba(129,140,248,.2)',borderColor:purple,borderWidth:2,pointBackgroundColor:purple,pointRadius:4
+    },{
+      label:'Target',data:[90,85,70,90,90,90],
+      backgroundColor:'rgba(52,211,153,.1)',borderColor:emerald,borderWidth:2,borderDash:[5,5],pointBackgroundColor:emerald,pointRadius:3
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{r:{grid:{color:'rgba(99,102,241,.1)'},ticks:{display:false},pointLabels:{font:{size:10},color:'#cbd5e1'},suggestedMin:0,suggestedMax:100}},
+    plugins:{legend:{position:'top',labels:{padding:12,usePointStyle:true,pointStyleWidth:8,font:{size:10}}}}}
+});
+
+// Test Creation Trend - Line
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{
+    labels:['Week 1 (Jan 19)','Week 2 (Jan 26)','Week 3 (Feb 2)','Week 4 (Feb 9)'],
+    datasets:[
+      {label:'Created',data:[32,28,45,62],borderColor:purple,backgroundColor:'rgba(129,140,248,.15)',fill:true,tension:.4,borderWidth:2,pointRadius:4,pointBackgroundColor:purple},
+      {label:'Completed',data:[24,22,35,18],borderColor:emerald,backgroundColor:'rgba(52,211,153,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:4,pointBackgroundColor:emerald}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(99,102,241,.06)'},beginAtZero:true}},
+    plugins:{legend:{position:'top',labels:{padding:12,usePointStyle:true,pointStyleWidth:8,font:{size:10}}}}}
+});
+</script>
+</body>
+</html>
