@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Resource Productivity Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#070b14;color:#e2e8f0;line-height:1.6}
+header{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%);padding:32px 24px 28px;border-bottom:1px solid rgba(99,102,241,.15)}
+header h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#a78bfa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:#94a3b8;font-size:.85rem;margin-top:4px}
+.home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#94a3b8;font-size:.78rem;font-weight:600;padding:5px 14px;border:1px solid rgba(99,102,241,.2);border-radius:8px;margin-bottom:8px;transition:all .15s}
+.home-btn:hover{background:rgba(99,102,241,.15);color:#a5b4fc}
+.wrap{max-width:1400px;margin:0 auto;padding:24px 20px 60px}
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:32px}
+.kpi{background:linear-gradient(135deg,#111827,#1a1f3a);border:1px solid rgba(99,102,241,.12);border-radius:14px;padding:20px 16px;text-align:center}
+.kpi .val{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi .lbl{font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.section-title{font-size:1.2rem;font-weight:700;color:#a5b4fc;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid rgba(99,102,241,.1)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+.card{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.12);border-radius:14px;padding:24px;overflow:hidden}
+.card h3{font-size:.95rem;font-weight:700;color:#c4b5fd;margin-bottom:12px}
+.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:32px}
+.proj-card{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.12);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.proj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.proj-card .proj-name{font-size:.95rem;font-weight:700;margin-bottom:6px}
+.proj-card .proj-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.proj-card .stat{text-align:center}
+.proj-card .stat .v{font-size:1.3rem;font-weight:800}
+.proj-card .stat .l{font-size:.65rem;color:#94a3b8;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:#1e1b4b;color:#a5b4fc;padding:10px 12px;text-align:left;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0}
+tbody tr{border-bottom:1px solid rgba(99,102,241,.08);transition:background .15s}
+tbody tr:hover{background:rgba(99,102,241,.06)}
+tbody td{padding:10px 12px}
+.rank{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.75rem}
+.rank-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1e1b4b}
+.rank-2{background:linear-gradient(135deg,#94a3b8,#cbd5e1);color:#1e1b4b}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#b8860b);color:#fff}
+.proj-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:600;margin:1px 2px}
+.bar-container{height:20px;background:rgba(99,102,241,.08);border-radius:10px;overflow:hidden;margin-top:4px}
+.bar-fill{height:100%;border-radius:10px;transition:width .5s}
+.chart-wrap{position:relative;height:300px}
+footer{text-align:center;padding:24px;color:#475569;font-size:.72rem;border-top:1px solid rgba(99,102,241,.08)}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="home-btn">&#8592; Home</a>
+  <h1>Resource Productivity Report</h1>
+  <p>Combined metrics across 10 active projects &bull; Q3 2025 &ndash; Q1 2026 (Last 2 Quarters)</p>
+</header>
+<div class="wrap">
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi"><div class="val">91</div><div class="lbl">Engineers</div></div>
+  <div class="kpi"><div class="val">490</div><div class="lbl">Issues Completed</div></div>
+  <div class="kpi"><div class="val">539</div><div class="lbl">Story Points</div></div>
+  <div class="kpi"><div class="val">10</div><div class="lbl">Active Projects</div></div>
+  <div class="kpi"><div class="val">5.4</div><div class="lbl">Avg Issues / Eng</div></div>
+  <div class="kpi"><div class="val">5.9</div><div class="lbl">Avg SP / Eng</div></div>
+</div>
+
+<!-- Section: Project Distribution -->
+<div class="section-title">Project Distribution</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Issues Completed by Project</h3>
+    <div class="chart-wrap"><canvas id="projIssueChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Story Points by Project</h3>
+    <div class="chart-wrap"><canvas id="projSPChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Project Summary Cards -->
+<div class="section-title">Project Summary</div>
+<div class="proj-cards">
+  <div class="proj-card" style="border-top:3px solid #818cf8">
+    <div class="proj-name" style="color:#818cf8">Config Platform (CBP)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#818cf8">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#818cf8">74</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#818cf8">9</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #34d399">
+    <div class="proj-name" style="color:#34d399">Software Engineering (SENG)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#34d399">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#34d399">57</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#34d399">12</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #f87171">
+    <div class="proj-name" style="color:#f87171">Deposit Accounts (DA)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#f87171">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#f87171">82</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#f87171">11</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #fb923c">
+    <div class="proj-name" style="color:#fb923c">D&D India (DDINDIA)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#fb923c">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#fb923c">132</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#fb923c">7</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #60a5fa">
+    <div class="proj-name" style="color:#60a5fa">Reverse HL (RHL)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#60a5fa">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#60a5fa">55</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#60a5fa">8</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #c084fc">
+    <div class="proj-name" style="color:#c084fc">APEX (APEX)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#c084fc">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#c084fc">12</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#c084fc">9</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #fbbf24">
+    <div class="proj-name" style="color:#fbbf24">Blend AI (BAI)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#fbbf24">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#fbbf24">0</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#fbbf24">7</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #4ade80">
+    <div class="proj-name" style="color:#4ade80">Quality (QUAL)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#4ade80">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#4ade80">73</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#4ade80">9</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #22d3ee">
+    <div class="proj-name" style="color:#22d3ee">Documents & Delivery (DD)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#22d3ee">50</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#22d3ee">5</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#22d3ee">13</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+  <div class="proj-card" style="border-top:3px solid #f472b6">
+    <div class="proj-name" style="color:#f472b6">Consumer Lending (CLN)</div>
+    <div class="proj-stats">
+      <div class="stat"><div class="v" style="color:#f472b6">40</div><div class="l">Issues</div></div>
+      <div class="stat"><div class="v" style="color:#f472b6">49</div><div class="l">Story Pts</div></div>
+      <div class="stat"><div class="v" style="color:#f472b6">12</div><div class="l">Engineers</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Contributors Chart -->
+<div class="section-title">Top Contributors</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Top 15 by Story Points</h3>
+    <div class="chart-wrap"><canvas id="topSPChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Top 15 by Issues Completed</h3>
+    <div class="chart-wrap"><canvas id="topIssueChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Engineer Leaderboard Table -->
+<div class="section-title">Engineer Leaderboard</div>
+<div class="card" style="padding:0;overflow:auto;max-height:600px">
+<table>
+<thead>
+<tr>
+  <th style="width:40px">#</th>
+  <th>Engineer</th>
+  <th>Projects</th>
+  <th style="text-align:right">Issues</th>
+  <th style="text-align:right">Story Points</th>
+  <th style="text-align:right">Avg SP/Issue</th>
+  <th style="width:180px">Productivity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><span class="rank rank-1" style="">1</span></td>
+  <td style="font-weight:600">Makam Dheeraj</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">10</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">49</td>
+  <td style="text-align:right">4.9</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:100%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank rank-2" style="">2</span></td>
+  <td style="font-weight:600">Gaurav Kumar</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">19</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">45</td>
+  <td style="text-align:right">2.4</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:92%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank rank-3" style="">3</span></td>
+  <td style="font-weight:600">Shimrit Yacobi</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">19</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">36</td>
+  <td style="text-align:right">1.9</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:73%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">4</span></td>
+  <td style="font-weight:600">Sharad Saurav</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">10</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">27</td>
+  <td style="text-align:right">2.7</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:55%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">5</span></td>
+  <td style="font-weight:600">Ku Kim</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">22</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">26</td>
+  <td style="text-align:right">1.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:53%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">6</span></td>
+  <td style="font-weight:600">Harikrishnan Manickam</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">25</td>
+  <td style="text-align:right">4.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:51%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">7</span></td>
+  <td style="font-weight:600">Sean Jeun</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">9</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">24</td>
+  <td style="text-align:right">2.7</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:49%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">8</span></td>
+  <td style="font-weight:600">Kumar Utkarsh</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">11</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">23</td>
+  <td style="text-align:right">2.1</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:47%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">9</span></td>
+  <td style="font-weight:600">Andres Vela</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">10</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">23</td>
+  <td style="text-align:right">2.3</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:47%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">10</span></td>
+  <td style="font-weight:600">Eduardo Angeles</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">9</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">22</td>
+  <td style="text-align:right">2.4</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:45%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">11</span></td>
+  <td style="font-weight:600">Charles Gildart</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">7</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">15</td>
+  <td style="text-align:right">2.1</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:31%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">12</span></td>
+  <td style="font-weight:600">Iván Álvarez Martínez</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">16</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">13</td>
+  <td style="text-align:right">0.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:27%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">13</span></td>
+  <td style="font-weight:600">Michael Meza</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">12</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">12</td>
+  <td style="text-align:right">1.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:24%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">14</span></td>
+  <td style="font-weight:600">Abhishek Sarabi</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">8</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">12</td>
+  <td style="text-align:right">1.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:24%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">15</span></td>
+  <td style="font-weight:600">Alejandro Camara</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">11</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">11</td>
+  <td style="text-align:right">1.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:22%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">16</span></td>
+  <td style="font-weight:600">Asif Parvez</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">10</td>
+  <td style="text-align:right">5.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:20%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">17</span></td>
+  <td style="font-weight:600">Deepika Reddy Sheshadri Reddy</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">9</td>
+  <td style="text-align:right">1.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:18%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">18</span></td>
+  <td style="font-weight:600">Aaron Chan</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">9</td>
+  <td style="text-align:right">1.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:18%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">19</span></td>
+  <td style="font-weight:600">Amod Kumar</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">9</td>
+  <td style="text-align:right">4.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:18%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">20</span></td>
+  <td style="font-weight:600">Simon Leblanc</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">7</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">8</td>
+  <td style="text-align:right">1.1</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:16%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">21</span></td>
+  <td style="font-weight:600">Abraham Chalita Nunez</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">8</td>
+  <td style="text-align:right">2.7</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:16%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">22</span></td>
+  <td style="font-weight:600">Nandini Satanur</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">8</td>
+  <td style="text-align:right">4.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:16%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">23</span></td>
+  <td style="font-weight:600">Syed Shabaz</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">8</td>
+  <td style="text-align:right">4.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:16%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">24</span></td>
+  <td style="font-weight:600">Abhirupa Chakraborty</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">8</td>
+  <td style="text-align:right">4.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:16%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">25</span></td>
+  <td style="font-weight:600">Mahesh Shetty</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">7</td>
+  <td style="text-align:right">1.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:14%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">26</span></td>
+  <td style="font-weight:600">Gabriele Giorgi</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">7</td>
+  <td style="text-align:right">2.3</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:14%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">27</span></td>
+  <td style="font-weight:600">Anthony Mazzola</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">6</td>
+  <td style="text-align:right">1.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:12%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">28</span></td>
+  <td style="font-weight:600">Yanyu Chen</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">7</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">5</td>
+  <td style="text-align:right">0.7</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:10%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">29</span></td>
+  <td style="font-weight:600">Aparna Krishnappa</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">5</td>
+  <td style="text-align:right">0.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:10%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">30</span></td>
+  <td style="font-weight:600">Kyle Martin</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">5</td>
+  <td style="text-align:right">1.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:10%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">31</span></td>
+  <td style="font-weight:600">Sarthak Sarangi</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">5</td>
+  <td style="text-align:right">2.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:10%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">32</span></td>
+  <td style="font-weight:600">Arun Kumar Ananthanarayanan</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">5</td>
+  <td style="text-align:right">5.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:10%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">33</span></td>
+  <td style="font-weight:600">Omar Aldrich Aparicio</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">4</td>
+  <td style="text-align:right">0.9</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:9%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">34</span></td>
+  <td style="font-weight:600">Tim Liew</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">4</td>
+  <td style="text-align:right">0.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:8%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">35</span></td>
+  <td style="font-weight:600">George Su</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">13</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">0.2</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">36</span></td>
+  <td style="font-weight:600">Lorien Draeger</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">0.6</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">37</span></td>
+  <td style="font-weight:600">Simon Getahun</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">0.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">38</span></td>
+  <td style="font-weight:600">Pablo Madrid</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">0.8</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">39</span></td>
+  <td style="font-weight:600">Sathish Krishnan</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">1.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">40</span></td>
+  <td style="font-weight:600">Kalpana Sharma</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">1.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">41</span></td>
+  <td style="font-weight:600">Nazarii Vasylynyn</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">1.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">42</span></td>
+  <td style="font-weight:600">Godwin Simon</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">3.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">43</span></td>
+  <td style="font-weight:600">Zuli Dilmurat</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">3.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">44</span></td>
+  <td style="font-weight:600">Shivam Kumar</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">3</td>
+  <td style="text-align:right">3.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:6%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">45</span></td>
+  <td style="font-weight:600">Misael Chavez Ramos</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">2</td>
+  <td style="text-align:right">0.6</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:5%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">46</span></td>
+  <td style="font-weight:600">Shreshth Malik</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span></td>
+  <td style="text-align:right;font-weight:700">5</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">2</td>
+  <td style="text-align:right">0.4</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:4%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">47</span></td>
+  <td style="font-weight:600">Cesar Alejandro Hernandez Orozco</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">2</td>
+  <td style="text-align:right">0.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:4%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">48</span></td>
+  <td style="font-weight:600">Mohammed Noor Pasha</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">2</td>
+  <td style="text-align:right">0.5</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:4%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">49</span></td>
+  <td style="font-weight:600">Zach Seprish</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">2</td>
+  <td style="text-align:right">2.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:4%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">50</span></td>
+  <td style="font-weight:600">Sreedhar Ramesh</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">9</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">1</td>
+  <td style="text-align:right">0.1</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:2%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">51</span></td>
+  <td style="font-weight:600">Alison Kerska</td>
+  <td><span class="proj-tag" style="background:#818cf822;color:#818cf8">CBP</span><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">1</td>
+  <td style="text-align:right">0.3</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:2%;background:#818cf8"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">52</span></td>
+  <td style="font-weight:600">Suyog Bhatia</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">1</td>
+  <td style="text-align:right">1.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:2%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">53</span></td>
+  <td style="font-weight:600">Christian Gonzalez</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">1</td>
+  <td style="text-align:right">1.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:2%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">54</span></td>
+  <td style="font-weight:600">Luis Ernesto De Guevara Gonzalez</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">1</td>
+  <td style="text-align:right">1.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:2%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">55</span></td>
+  <td style="font-weight:600">Akhil Jalla</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">18</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">56</span></td>
+  <td style="font-weight:600">Hai Ly</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">17</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">57</span></td>
+  <td style="font-weight:600">Prathiksha Rajendra Koteshwara</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">14</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">58</span></td>
+  <td style="font-weight:600">Rebecca Garcia</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">14</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">59</span></td>
+  <td style="font-weight:600">Alexander Srey</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">11</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">60</span></td>
+  <td style="font-weight:600">Ya He</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">10</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">61</span></td>
+  <td style="font-weight:600">Will Duan</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">8</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">62</span></td>
+  <td style="font-weight:600">Alan Castro</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">8</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">63</span></td>
+  <td style="font-weight:600">Niranjan Cholendiran</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">7</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">64</span></td>
+  <td style="font-weight:600">Megan McDevitt</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">65</span></td>
+  <td style="font-weight:600">Akash Pai</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">66</span></td>
+  <td style="font-weight:600">Jacob Powers</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">6</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">67</span></td>
+  <td style="font-weight:600">Miguel Islas Hernandez</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">68</span></td>
+  <td style="font-weight:600">Anatoliy Sokolov</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">4</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">69</span></td>
+  <td style="font-weight:600">Nickolas Scipione</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">70</span></td>
+  <td style="font-weight:600">Henry Liu</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">71</span></td>
+  <td style="font-weight:600">Mansi Desai</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">72</span></td>
+  <td style="font-weight:600">Isai Gonzalez Olmos</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">3</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">73</span></td>
+  <td style="font-weight:600">Richard Gau</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">74</span></td>
+  <td style="font-weight:600">Ashley Kim</td>
+  <td><span class="proj-tag" style="background:#f8717122;color:#f87171">DA</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#f87171"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">75</span></td>
+  <td style="font-weight:600">Ari Mendelson</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">76</span></td>
+  <td style="font-weight:600">Prakhar Supekar</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">77</span></td>
+  <td style="font-weight:600">Shrinidhi Patil</td>
+  <td><span class="proj-tag" style="background:#4ade8022;color:#4ade80">QUAL</span></td>
+  <td style="text-align:right;font-weight:700">2</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#4ade80"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">78</span></td>
+  <td style="font-weight:600">Maria Jose</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">79</span></td>
+  <td style="font-weight:600">Shiva Thejas</td>
+  <td><span class="proj-tag" style="background:#f472b622;color:#f472b6">CLN</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#f472b6"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">80</span></td>
+  <td style="font-weight:600">Shivakumar Y</td>
+  <td><span class="proj-tag" style="background:#34d39922;color:#34d399">SENG</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#34d399"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">81</span></td>
+  <td style="font-weight:600">Arjun Pradeep Gujar</td>
+  <td><span class="proj-tag" style="background:#fb923c22;color:#fb923c">DDINDIA</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fb923c"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">82</span></td>
+  <td style="font-weight:600">Anisha Agrawal</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">83</span></td>
+  <td style="font-weight:600">Jacob Grisham</td>
+  <td><span class="proj-tag" style="background:#60a5fa22;color:#60a5fa">RHL</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#60a5fa"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">84</span></td>
+  <td style="font-weight:600">Sahil Jamwal</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">85</span></td>
+  <td style="font-weight:600">Timothy Rafferty</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">86</span></td>
+  <td style="font-weight:600">Hemanth Surya</td>
+  <td><span class="proj-tag" style="background:#c084fc22;color:#c084fc">APEX</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#c084fc"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">87</span></td>
+  <td style="font-weight:600">Ben Swanson</td>
+  <td><span class="proj-tag" style="background:#fbbf2422;color:#fbbf24">BAI</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#fbbf24"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">88</span></td>
+  <td style="font-weight:600">Tamia Forbes</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">89</span></td>
+  <td style="font-weight:600">Charles DeWald</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">90</span></td>
+  <td style="font-weight:600">Sunil Dandayuthapani</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+<tr>
+  <td><span class="rank " style="background:rgba(99,102,241,.12);color:#818cf8">91</span></td>
+  <td style="font-weight:600">Greg Tamanini</td>
+  <td><span class="proj-tag" style="background:#22d3ee22;color:#22d3ee">DD</span></td>
+  <td style="text-align:right;font-weight:700">1</td>
+  <td style="text-align:right;font-weight:700;color:#a5b4fc">0</td>
+  <td style="text-align:right">0.0</td>
+  <td><div class="bar-container"><div class="bar-fill" style="width:0%;background:#22d3ee"></div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- Quarterly Breakdown -->
+<div class="section-title">Quarterly Breakdown</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Issues by Quarter &amp; Project</h3>
+    <div class="chart-wrap"><canvas id="qtrIssueChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Story Points by Quarter &amp; Project</h3>
+    <div class="chart-wrap"><canvas id="qtrSPChart"></canvas></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<footer>
+  Resource Productivity Report &bull; Data sourced from JIRA &bull; Generated Feb 12, 2026 08:00 PM
+</footer>
+
+<script>
+const projLabels = ["Config Platform", "Software Engineering", "Deposit Accounts", "D&D India", "Reverse HL", "APEX", "Blend AI", "Quality", "Documents & Delivery", "Consumer Lending"];
+const projIssueCounts = [50, 50, 50, 50, 50, 50, 50, 50, 50, 40];
+const projSPCounts = [74.0, 57.0, 82.0, 132.0, 55.0, 12.0, 0.0, 73.0, 5.0, 49.0];
+const projColors = ["#818cf8", "#34d399", "#f87171", "#fb923c", "#60a5fa", "#c084fc", "#fbbf24", "#4ade80", "#22d3ee", "#f472b6"];
+
+// Project Issues Chart (horizontal bar)
+new Chart(document.getElementById('projIssueChart'), {
+  type: 'bar',
+  data: {
+    labels: projLabels,
+    datasets: [{
+      label: 'Issues Completed',
+      data: projIssueCounts,
+      backgroundColor: projColors.map(c => c + '88'),
+      borderColor: projColors,
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+    }
+  }
+});
+
+// Project SP Chart (horizontal bar)
+new Chart(document.getElementById('projSPChart'), {
+  type: 'bar',
+  data: {
+    labels: projLabels,
+    datasets: [{
+      label: 'Story Points',
+      data: projSPCounts,
+      backgroundColor: projColors.map(c => c + '88'),
+      borderColor: projColors,
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+    }
+  }
+});
+
+// Top Contributors by SP
+const topSPNames = ["Makam D", "Gaurav K", "Shimrit Y", "Sharad S", "Ku K", "Harikrishnan M", "Sean J", "Kumar U", "Andres V", "Eduardo A", "Charles G", "Iv\u00e1n M", "Michael M", "Abhishek S", "Alejandro C"];
+const topSPValues = [49.0, 45.0, 36.0, 27.0, 26.0, 25.0, 24.0, 23.0, 23.0, 22.0, 15.0, 13.0, 12.0, 12.0, 11.0];
+const topSPColors = ["#4ade80", "#fb923c", "#818cf8", "#fb923c", "#60a5fa", "#fb923c", "#34d399", "#fb923c", "#f87171", "#f472b6", "#f87171", "#34d399", "#f87171", "#818cf8", "#c084fc"];
+
+new Chart(document.getElementById('topSPChart'), {
+  type: 'bar',
+  data: {
+    labels: topSPNames,
+    datasets: [{
+      label: 'Story Points',
+      data: topSPValues,
+      backgroundColor: topSPColors.map(c => c + '88'),
+      borderColor: topSPColors,
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+    }
+  }
+});
+
+// Top Contributors by Issues
+const topIssNames = ["Ku K", "Gaurav K", "Shimrit Y", "Iv\u00e1n M", "Michael M", "Kumar U", "Alejandro C", "Makam D", "Sharad S", "Andres V", "Sean J", "Eduardo A", "Abhishek S", "Charles G", "Harikrishnan M"];
+const topIssValues = [22, 19, 19, 16, 12, 11, 11, 10, 10, 10, 9, 9, 8, 7, 6];
+const topIssColors = ["#60a5fa", "#fb923c", "#818cf8", "#34d399", "#f87171", "#fb923c", "#c084fc", "#4ade80", "#fb923c", "#f87171", "#34d399", "#f472b6", "#818cf8", "#f87171", "#fb923c"];
+
+new Chart(document.getElementById('topIssueChart'), {
+  type: 'bar',
+  data: {
+    labels: topIssNames,
+    datasets: [{
+      label: 'Issues Completed',
+      data: topIssValues,
+      backgroundColor: topIssColors.map(c => c + '88'),
+      borderColor: topIssColors,
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11 } } }
+    }
+  }
+});
+
+// Quarterly Breakdown - Issues by Quarter & Project (stacked bar)
+const quarters = ["Q3 2025", "Q4 2025", "Q1 2026"];
+const qtrDatasets = [];
+
+qtrDatasets.push({
+  label: 'Config Platform',
+  data: [0, 0, 0],
+  backgroundColor: '#818cf888',
+  borderColor: '#818cf8',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Software Engineering',
+  data: [0, 0, 41],
+  backgroundColor: '#34d39988',
+  borderColor: '#34d399',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Deposit Accounts',
+  data: [0, 0, 0],
+  backgroundColor: '#f8717188',
+  borderColor: '#f87171',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'D&D India',
+  data: [0, 0, 0],
+  backgroundColor: '#fb923c88',
+  borderColor: '#fb923c',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Reverse HL',
+  data: [0, 0, 0],
+  backgroundColor: '#60a5fa88',
+  borderColor: '#60a5fa',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'APEX',
+  data: [0, 0, 0],
+  backgroundColor: '#c084fc88',
+  borderColor: '#c084fc',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Blend AI',
+  data: [0, 0, 0],
+  backgroundColor: '#fbbf2488',
+  borderColor: '#fbbf24',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Quality',
+  data: [0, 0, 0],
+  backgroundColor: '#4ade8088',
+  borderColor: '#4ade80',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Documents & Delivery',
+  data: [0, 0, 0],
+  backgroundColor: '#22d3ee88',
+  borderColor: '#22d3ee',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrDatasets.push({
+  label: 'Consumer Lending',
+  data: [0, 0, 0],
+  backgroundColor: '#f472b688',
+  borderColor: '#f472b6',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+new Chart(document.getElementById('qtrIssueChart'), {
+  type: 'bar',
+  data: { labels: quarters, datasets: qtrDatasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 12 } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false }, ticks: { color: '#e2e8f0' } },
+      y: { stacked: true, grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+
+// Quarterly SP Chart (stacked)
+const qtrSPDatasets = [];
+
+qtrSPDatasets.push({
+  label: 'Config Platform',
+  data: [0, 0, 0],
+  backgroundColor: '#818cf888',
+  borderColor: '#818cf8',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Software Engineering',
+  data: [0, 0, 51.5],
+  backgroundColor: '#34d39988',
+  borderColor: '#34d399',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Deposit Accounts',
+  data: [0, 0, 0],
+  backgroundColor: '#f8717188',
+  borderColor: '#f87171',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'D&D India',
+  data: [0, 0, 0],
+  backgroundColor: '#fb923c88',
+  borderColor: '#fb923c',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Reverse HL',
+  data: [0, 0, 0],
+  backgroundColor: '#60a5fa88',
+  borderColor: '#60a5fa',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'APEX',
+  data: [0, 0, 0],
+  backgroundColor: '#c084fc88',
+  borderColor: '#c084fc',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Blend AI',
+  data: [0, 0, 0],
+  backgroundColor: '#fbbf2488',
+  borderColor: '#fbbf24',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Quality',
+  data: [0, 0, 0],
+  backgroundColor: '#4ade8088',
+  borderColor: '#4ade80',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Documents & Delivery',
+  data: [0, 0, 0],
+  backgroundColor: '#22d3ee88',
+  borderColor: '#22d3ee',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+qtrSPDatasets.push({
+  label: 'Consumer Lending',
+  data: [0, 0, 0],
+  backgroundColor: '#f472b688',
+  borderColor: '#f472b6',
+  borderWidth: 1,
+  borderRadius: 4
+});
+
+new Chart(document.getElementById('qtrSPChart'), {
+  type: 'bar',
+  data: { labels: quarters, datasets: qtrSPDatasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 12 } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false }, ticks: { color: '#e2e8f0' } },
+      y: { stacked: true, grid: { color: 'rgba(99,102,241,.08)' }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
