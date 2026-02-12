@@ -545,7 +545,11 @@ h.append('</div>')
 h.append('''<div class="section-title">Distribution Charts</div>
 <div class="grid-2">
   <div class="card"><h3>📊 Epics by Project</h3><div class="chart-wrap"><canvas id="epicChart"></canvas></div></div>
-  <div class="card"><h3>🎯 Priority &amp; Status Distribution</h3><div class="chart-wrap" style="display:flex;gap:20px"><canvas id="prioChart" style="flex:1"></canvas><canvas id="statusChart" style="flex:1"></canvas></div></div>
+  <div class="card"><h3>🎯 Epic Priority Distribution</h3><div class="chart-wrap"><canvas id="prioChart"></canvas></div></div>
+</div>
+<div class="grid-2">
+  <div class="card"><h3>📈 Epic Status Breakdown</h3><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
+  <div class="card"><h3>🐛 Bugs by Project</h3><div class="chart-wrap"><canvas id="bugChart"></canvas></div></div>
 </div>''')
 
 # Filter + Epic blocks with toolbar (search, expand/collapse, pagination)
@@ -697,7 +701,16 @@ new Chart(document.getElementById('statusChart'),{{
       backgroundColor:['rgba(148,163,184,.5)','rgba(251,191,36,.7)','rgba(248,113,113,.7)'],
       borderWidth:0,hoverOffset:8}}]}},
   options:{{responsive:true,maintainAspectRatio:false,cutout:'60%',
-    plugins:{{legend:{{position:'bottom',labels:{{padding:12,usePointStyle:true,pointStyleWidth:10,font:{{size:10}}}}}}}}}}
+    plugins:{{legend:{{position:'bottom',labels:{{padding:12,usePointStyle:true,pointStyleWidth:10,font:{{size:11}}}}}}}}}}
+}});
+
+new Chart(document.getElementById('bugChart'),{{
+  type:'bar',data:{{labels:{J.dumps(proj_list)},datasets:[{{label:'Bugs',
+    data:{J.dumps([sum(e['bug_count'] for e in projects[p]) for p in proj_list])},
+    backgroundColor:{J.dumps([clr(p) for p in proj_list])},
+    borderWidth:0,borderRadius:4}}]}},
+  options:{{responsive:true,maintainAspectRatio:false,plugins:{{legend:{{display:false}}}},
+    scales:{{x:{{grid:{{display:false}}}},y:{{grid:{{color:'rgba(99,102,241,.05)'}},beginAtZero:true}}}}}}
 }});
 
 // ===== Pagination, Search, Filter =====
