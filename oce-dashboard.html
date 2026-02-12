@@ -10,6 +10,8 @@
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#070b14;color:#e2e8f0;min-height:100vh}
 .container{max-width:1560px;margin:0 auto;padding:24px}
 header{text-align:center;padding:32px 0 12px;border-bottom:1px solid rgba(239,68,68,.25);margin-bottom:28px}
+.home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#94a3b8;font-size:.78rem;font-weight:600;padding:5px 14px;border:1px solid rgba(99,102,241,.2);border-radius:8px;margin-bottom:12px;transition:all .15s}
+.home-btn:hover{background:rgba(99,102,241,.15);color:#a5b4fc}
 header h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#f87171,#fb923c,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
 header p{color:#94a3b8;font-size:.95rem;margin-top:6px}
 .ts{color:#64748b;font-size:.75rem;margin-top:4px}
@@ -88,6 +90,7 @@ footer{text-align:center;padding:24px 0 16px;color:#475569;font-size:.72rem;bord
 <body>
 <div class="container">
 <header>
+  <a href="index.html" class="home-btn">&#8592; Home</a>
   <h1>OCE Active Tickets Dashboard — All Projects</h1>
   <p>On-Call Engineering &bull; EPD-Logged &bull; Production Issues Tracker | Blend Engineering</p>
   <div class="ts">DD &bull; DDINDIA &bull; SENG &bull; CLN &bull; CBP &bull; DA &bull; RHL &bull; IMB &bull; APEX &bull; BAI &mdash; Data from JIRA &bull; Generated: <span id="genTime"></span></div>
