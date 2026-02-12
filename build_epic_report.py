@@ -444,22 +444,36 @@ header h1{{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#818
 header p{{color:#94a3b8;font-size:.95rem;margin-top:6px}}
 .ts{{color:#64748b;font-size:.75rem;margin-top:4px}}
 .kpi-row{{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px}}
-.kpi{{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.15);border-radius:14px;padding:20px;text-align:center}}
-.kpi .val{{font-size:2.1rem;font-weight:800}}.kpi .lbl{{font-size:.78rem;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}}
+.kpi{{background:linear-gradient(135deg,#111827 0%,#1a1f3a 100%);border:1px solid rgba(99,102,241,.15);border-radius:14px;padding:22px;text-align:center}}
+.kpi .val{{font-size:2.2rem;font-weight:800}}.kpi .lbl{{font-size:.82rem;color:#94a3b8;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}}
 .section-title{{font-size:1.15rem;font-weight:700;color:#a5b4fc;margin:28px 0 16px;padding-left:12px;border-left:3px solid #6366f1}}
 .grid-2{{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}}
 .grid-3{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}}
 .card{{background:linear-gradient(135deg,#111827 0%,#151c32 100%);border:1px solid rgba(99,102,241,.12);border-radius:14px;padding:22px}}
 .card h3{{font-size:.95rem;font-weight:600;color:#a5b4fc;margin-bottom:16px;display:flex;align-items:center;gap:8px}}
 .chart-wrap{{position:relative;width:100%;height:300px}}
-.filter-bar{{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}}
-.filter-btn{{padding:6px 16px;border-radius:8px;border:1px solid rgba(99,102,241,.2);background:transparent;color:#94a3b8;font-size:.78rem;cursor:pointer;font-weight:600;transition:all .15s}}
+.toolbar{{position:sticky;top:0;z-index:20;background:#070b14;padding:16px 0 12px;border-bottom:1px solid rgba(99,102,241,.1);margin-bottom:20px}}
+.search-row{{display:flex;gap:12px;align-items:center;margin-bottom:12px}}
+.search-input{{flex:1;max-width:400px;padding:10px 16px;border-radius:10px;border:1px solid rgba(99,102,241,.2);background:#111827;color:#e2e8f0;font-size:.88rem;outline:none;transition:border-color .2s}}
+.search-input:focus{{border-color:rgba(99,102,241,.5)}}
+.search-input::placeholder{{color:#475569}}
+.toolbar-actions{{display:flex;gap:8px;margin-left:auto}}
+.action-btn{{padding:8px 16px;border-radius:8px;border:1px solid rgba(99,102,241,.2);background:transparent;color:#94a3b8;font-size:.78rem;cursor:pointer;font-weight:600;transition:all .15s}}
+.action-btn:hover{{background:rgba(99,102,241,.12);color:#a5b4fc}}
+.filter-bar{{display:flex;gap:8px;flex-wrap:wrap}}
+.filter-btn{{padding:7px 16px;border-radius:8px;border:1px solid rgba(99,102,241,.2);background:transparent;color:#94a3b8;font-size:.8rem;cursor:pointer;font-weight:600;transition:all .15s}}
 .filter-btn:hover,.filter-btn.active{{background:rgba(99,102,241,.15);color:#a5b4fc;border-color:rgba(99,102,241,.4)}}
+.page-controls{{display:flex;gap:8px;align-items:center;justify-content:center;margin:24px 0}}
+.page-btn{{padding:8px 18px;border-radius:8px;border:1px solid rgba(99,102,241,.2);background:transparent;color:#94a3b8;font-size:.82rem;cursor:pointer;font-weight:600;transition:all .15s}}
+.page-btn:hover{{background:rgba(99,102,241,.12);color:#a5b4fc}}
+.page-btn.active{{background:rgba(99,102,241,.2);color:#a5b4fc;border-color:rgba(99,102,241,.4)}}
+.page-btn:disabled{{opacity:.3;cursor:default}}
+.page-info{{color:#64748b;font-size:.82rem}}
 .epic-block{{background:rgba(17,24,39,.8);border:1px solid rgba(99,102,241,.1);border-radius:12px;margin-bottom:16px;overflow:hidden}}
 .epic-header{{padding:14px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid rgba(99,102,241,.06)}}
 .epic-header:hover{{background:rgba(99,102,241,.03)}}
-.epic-key a{{color:#818cf8;text-decoration:none;font-weight:700;font-size:.82rem}}.epic-key a:hover{{text-decoration:underline}}
-.epic-summary{{flex:1;font-size:.86rem;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.epic-key a{{color:#818cf8;text-decoration:none;font-weight:700;font-size:.88rem}}.epic-key a:hover{{text-decoration:underline}}
+.epic-summary{{flex:1;font-size:.92rem;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 .epic-meta{{display:flex;gap:6px;align-items:center}}
 .story-count{{background:rgba(99,102,241,.15);color:#818cf8;padding:2px 10px;border-radius:10px;font-size:.72rem;font-weight:600}}
 .progress-bar{{width:100px;height:6px;background:rgba(148,163,184,.15);border-radius:3px;overflow:hidden}}
@@ -467,9 +481,10 @@ header p{{color:#94a3b8;font-size:.95rem;margin-top:6px}}
 .toggle-icon{{color:#64748b;font-size:.75rem;transition:transform .2s}}
 .epic-block.open .toggle-icon{{transform:rotate(90deg)}}
 .story-list{{display:none;padding:0}}.epic-block.open .story-list{{display:block}}
-.story-row{{display:grid;grid-template-columns:100px 60px 1fr 90px 120px 160px;gap:8px;padding:8px 20px;border-bottom:1px solid rgba(99,102,241,.04);font-size:.78rem;align-items:center}}
-.story-row:hover{{background:rgba(99,102,241,.02)}}.story-row:last-child{{border-bottom:none}}
-.story-row-header{{font-weight:600;color:#94a3b8;text-transform:uppercase;font-size:.68rem;letter-spacing:.5px;background:rgba(99,102,241,.03)}}
+.story-row{{display:grid;grid-template-columns:110px 68px 1fr 90px 130px 170px;gap:10px;padding:10px 20px;border-bottom:1px solid rgba(99,102,241,.04);font-size:.84rem;align-items:center}}
+.story-row:nth-child(even){{background:rgba(99,102,241,.02)}}
+.story-row:hover{{background:rgba(99,102,241,.05)}}.story-row:last-child{{border-bottom:none}}
+.story-row-header{{font-weight:600;color:#94a3b8;text-transform:uppercase;font-size:.72rem;letter-spacing:.5px;background:rgba(99,102,241,.04)}}
 .story-key a{{color:#818cf8;text-decoration:none;font-weight:600;font-size:.78rem}}.story-key a:hover{{text-decoration:underline}}
 .story-summary{{color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 .no-stories{{padding:16px 20px;color:#64748b;font-size:.82rem;font-style:italic}}
@@ -500,14 +515,12 @@ footer{{text-align:center;padding:24px 0 16px;color:#475569;font-size:.72rem;bor
   <div class="ts">{' &bull; '.join(proj_list)} &mdash; Data from JIRA &bull; {now}</div>
 </header>''')
 
-# KPIs
-h.append(f'''<div class="kpi-row" style="grid-template-columns:repeat(7,1fr)">
+# KPIs (5 key metrics)
+h.append(f'''<div class="kpi-row">
   <div class="kpi"><div class="val" style="color:#a78bfa">{total_epics}</div><div class="lbl">Active Epics</div></div>
   <div class="kpi"><div class="val" style="color:#818cf8">{total_stories}</div><div class="lbl">Children Mapped</div></div>
   <div class="kpi"><div class="val" style="color:#f87171">{total_bugs}</div><div class="lbl">Bugs</div></div>
   <div class="kpi"><div class="val" style="color:#fb923c">{total_orphans}+</div><div class="lbl">Orphan Items</div></div>
-  <div class="kpi"><div class="val" style="color:#34d399">{sum(e["done"] for e in epic_data.values())}</div><div class="lbl">Done</div></div>
-  <div class="kpi"><div class="val" style="color:#fbbf24">{sum(e["in_progress"] for e in epic_data.values())}</div><div class="lbl">In Progress</div></div>
   <div class="kpi"><div class="val" style="color:#60a5fa">{len(proj_list)}</div><div class="lbl">Projects</div></div>
 </div>''')
 
@@ -528,20 +541,30 @@ for proj in proj_list:
     </div>''')
 h.append('</div>')
 
-# Charts
+# Charts (2-column for better readability)
 h.append('''<div class="section-title">Distribution Charts</div>
-<div class="grid-3">
+<div class="grid-2">
   <div class="card"><h3>📊 Epics by Project</h3><div class="chart-wrap"><canvas id="epicChart"></canvas></div></div>
-  <div class="card"><h3>🎯 Epic Priority Distribution</h3><div class="chart-wrap"><canvas id="prioChart"></canvas></div></div>
-  <div class="card"><h3>📈 Epic Status</h3><div class="chart-wrap"><canvas id="statusChart"></canvas></div></div>
+  <div class="card"><h3>🎯 Priority &amp; Status Distribution</h3><div class="chart-wrap" style="display:flex;gap:20px"><canvas id="prioChart" style="flex:1"></canvas><canvas id="statusChart" style="flex:1"></canvas></div></div>
 </div>''')
 
-# Filter + Epic blocks
+# Filter + Epic blocks with toolbar (search, expand/collapse, pagination)
 h.append('<div class="section-title">Epic → Story Details</div>')
-h.append('<div class="filter-bar"><button class="filter-btn active" onclick="filterProject(\'all\')">All</button>')
+h.append('''<div class="toolbar" id="epicToolbar">
+  <div class="search-row">
+    <input type="text" class="search-input" id="epicSearch" placeholder="Search epics by key, name, or assignee..." oninput="searchEpics(this.value)">
+    <div class="toolbar-actions">
+      <button class="action-btn" onclick="toggleAll(true)">Expand All</button>
+      <button class="action-btn" onclick="toggleAll(false)">Collapse All</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterProject('all')">All</button>''')
 for p in proj_list:
-    h.append(f'<button class="filter-btn" onclick="filterProject(\'{p}\')" style="border-color:{clr(p)}50">{p} ({len(projects[p])})</button>')
-h.append('</div>')
+    h.append(f'    <button class="filter-btn" onclick="filterProject(\'{p}\')" style="border-color:{clr(p)}50">{p} ({len(projects[p])})</button>')
+h.append('''  </div>
+</div>
+<div id="pageInfo" class="page-info" style="text-align:center;margin-bottom:12px"></div>''')
 
 for proj in proj_list:
     for ep in projects[proj]:
@@ -582,6 +605,9 @@ for proj in proj_list:
         else:
             h.append('<div class="no-stories">No child stories mapped yet — click the Epic key to view in JIRA</div>')
         h.append('</div></div>')
+
+# Pagination controls
+h.append('<div class="page-controls" id="pageControls"></div>')
 
 # ── Orphan Stories & Bugs Section ──────────────────────────────────
 h.append('<div class="section-title">Orphan Stories &amp; Bugs (No Parent Epic)</div>')
@@ -674,13 +700,79 @@ new Chart(document.getElementById('statusChart'),{{
     plugins:{{legend:{{position:'bottom',labels:{{padding:12,usePointStyle:true,pointStyleWidth:10,font:{{size:10}}}}}}}}}}
 }});
 
-function filterProject(proj){{
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.epic-block').forEach(el=>{{
-    el.style.display=(proj==='all'||el.dataset.project===proj)?'':'none';
+// ===== Pagination, Search, Filter =====
+const PAGE_SIZE = 25;
+let currentPage = 1;
+let currentFilter = 'all';
+let currentSearch = '';
+
+function getVisibleEpics() {{
+  const blocks = Array.from(document.querySelectorAll('.epic-block'));
+  return blocks.filter(el => {{
+    const matchProj = currentFilter === 'all' || el.dataset.project === currentFilter;
+    if (!matchProj) return false;
+    if (!currentSearch) return true;
+    const q = currentSearch.toLowerCase();
+    const text = el.textContent.toLowerCase();
+    return text.includes(q);
   }});
 }}
+
+function renderPage() {{
+  const visible = getVisibleEpics();
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  // Hide all, show only current page
+  document.querySelectorAll('.epic-block').forEach(el => el.style.display = 'none');
+  visible.forEach((el, i) => {{ el.style.display = (i >= start && i < end) ? '' : 'none'; }});
+  // Page info
+  const info = document.getElementById('pageInfo');
+  info.textContent = 'Showing ' + (start+1) + '-' + Math.min(end, visible.length) + ' of ' + visible.length + ' epics';
+  // Page controls
+  const ctrl = document.getElementById('pageControls');
+  let btns = '<button class="page-btn" onclick="goPage(1)" ' + (currentPage===1?'disabled':'') + '>&laquo; First</button>';
+  btns += '<button class="page-btn" onclick="goPage('+(currentPage-1)+')" ' + (currentPage===1?'disabled':'') + '>&lsaquo; Prev</button>';
+  const range = 3;
+  for (let p = Math.max(1,currentPage-range); p <= Math.min(totalPages,currentPage+range); p++) {{
+    btns += '<button class="page-btn ' + (p===currentPage?'active':'') + '" onclick="goPage('+p+')">'+p+'</button>';
+  }}
+  btns += '<button class="page-btn" onclick="goPage('+(currentPage+1)+')" ' + (currentPage>=totalPages?'disabled':'') + '>Next &rsaquo;</button>';
+  btns += '<button class="page-btn" onclick="goPage('+totalPages+')" ' + (currentPage>=totalPages?'disabled':'') + '>Last &raquo;</button>';
+  ctrl.innerHTML = btns;
+}}
+
+function goPage(p) {{ currentPage = p; renderPage(); }}
+
+function filterProject(proj) {{
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  currentFilter = proj;
+  currentPage = 1;
+  renderPage();
+}}
+
+function searchEpics(q) {{
+  currentSearch = q;
+  currentPage = 1;
+  renderPage();
+}}
+
+function toggleAll(expand) {{
+  const visible = getVisibleEpics();
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  visible.forEach((el, i) => {{
+    if (i >= start && i < end) {{
+      if (expand) el.classList.add('open');
+      else el.classList.remove('open');
+    }}
+  }});
+}}
+
+// Initial render
+renderPage();
 
 // Orphan chart
 (function(){{
