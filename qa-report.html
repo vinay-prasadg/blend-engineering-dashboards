@@ -27,6 +27,7 @@ header .meta .live{display:inline-block;width:8px;height:8px;background:#22c55e;
 .kpi.yellow::before{background:linear-gradient(90deg,#fbbf24,#eab308)}
 .kpi.green::before{background:linear-gradient(90deg,#34d399,#22c55e)}
 .kpi.blue::before{background:linear-gradient(90deg,#38bdf8,#0ea5e9)}
+.kpi.purple::before{background:linear-gradient(90deg,#a78bfa,#8b5cf6)}
 .kpi .lbl{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
 .kpi .val{font-size:2rem;font-weight:800;margin:4px 0 2px}
 .kpi .sub{font-size:.75rem;color:#475569}
@@ -87,7 +88,7 @@ tr:hover td{background:#111827a0}
   <div class="title">
     <a href="index.html" class="home-btn">&#8592; Home</a>
     <h1>QA Report &mdash; All Projects</h1>
-    <p>Bug Metrics &bull; Severity Analysis &bull; QA Pipeline &bull; Critical Issues &bull; Trends</p>
+    <p>Bug Metrics &bull; Severity Analysis &bull; QA Pipeline &bull; Test Execution &bull; Critical Issues &bull; Trends</p>
   </div>
   <div class="meta">
     <div><span class="live"></span> Live from JIRA</div>
@@ -110,6 +111,7 @@ tr:hover td{background:#111827a0}
   <button class="tab-btn active" onclick="switchTab('overview')">Bug Overview</button>
   <button class="tab-btn" onclick="switchTab('critical')">Critical Bugs</button>
   <button class="tab-btn" onclick="switchTab('pipeline')">QA Pipeline</button>
+  <button class="tab-btn" onclick="switchTab('execution')">Test Execution</button>
   <button class="tab-btn" onclick="switchTab('trends')">Trends</button>
 </div>
 
@@ -167,6 +169,50 @@ tr:hover td{background:#111827a0}
     <h3><span>🔍</span> Issues Ready for QA / QA In Progress</h3>
     <div class="tbl-wrap"><table id="qaTable">
       <thead><tr><th>Key</th><th>Project</th><th>Type</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- TAB: Test Execution -->
+<div class="tab-panel" id="tab-execution">
+  <div class="kpi-row" style="margin-bottom:24px">
+    <div class="kpi blue"><div class="lbl">Total Executed (90d)</div><div class="val" style="color:#38bdf8" id="kpiExecTotal">126</div><div class="sub">Issues through QA pipeline</div></div>
+    <div class="kpi green"><div class="lbl">QA Pass Rate</div><div class="val" style="color:#34d399" id="kpiPassRate">78%</div><div class="sub">Passed QA first time or after fix</div></div>
+    <div class="kpi yellow"><div class="lbl">Currently in QA</div><div class="val" style="color:#fbbf24" id="kpiInQA">40</div><div class="sub">QA In Progress right now</div></div>
+    <div class="kpi orange"><div class="lbl">QA Rejection Rate</div><div class="val" style="color:#fb923c" id="kpiRejectRate">22%</div><div class="sub">Sent back to development</div></div>
+    <div class="kpi purple" style="--c:#a78bfa"><div class="lbl">QA Throughput (30d)</div><div class="val" style="color:#a78bfa" id="kpiThruput">48</div><div class="sub">Issues completed QA last 30d</div></div>
+  </div>
+
+  <div class="section"><h2>Test Execution by Project (Last 90 Days)</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>&#9989;</span> Issues Executed Through QA by Project</h3><canvas id="execByProjChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>&#128202;</span> QA Pass vs Reject by Project</h3><canvas id="passRejectChart" width="600" height="300"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span>&#128200;</span> QA Throughput: Last 30d vs 30-60d</h3><canvas id="execThroughputChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>&#128300;</span> Execution by Issue Priority</h3><canvas id="execByPrioChart" width="600" height="300"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span>&#128640;</span> QA Pipeline Distribution</h3><canvas id="execPipelineChart" width="500" height="300"></canvas></div>
+    <div class="card">
+      <h3><span>&#128221;</span> Test Execution Summary</h3>
+      <div style="padding:12px;font-size:.88rem;line-height:1.8;color:#94a3b8">
+        <div style="margin-bottom:12px"><strong style="color:#38bdf8">126 issues</strong> went through QA in the last 90 days across all projects</div>
+        <div style="margin-bottom:12px"><strong style="color:#34d399">SENG</strong> accounts for 54% of all QA executions (68 issues) &mdash; highest test volume</div>
+        <div style="margin-bottom:12px"><strong style="color:#fb923c">22% rejection rate</strong> across projects &mdash; 28 issues returned to development from QA</div>
+        <div style="margin-bottom:12px"><strong style="color:#fbbf24">DA</strong> and <strong style="color:#fbbf24">RHL</strong> show strong pass rates at 78% and 75% respectively</div>
+        <div style="margin-bottom:12px"><strong style="color:#a78bfa">QA throughput increased</strong> from 38 (30-60d) to 48 (last 30d) &mdash; <span style="color:#34d399">+26% improvement</span></div>
+        <div><strong style="color:#f87171">40 issues</strong> currently in QA In Progress &mdash; SENG (19), DA (9), DDINDIA (6) lead the queue</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section"><h2>Currently in QA &mdash; Detailed View</h2><div class="line"></div></div>
+  <div class="card">
+    <h3><span>&#128270;</span> All Issues Currently in QA In Progress</h3>
+    <div class="tbl-wrap"><table id="execTable">
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Assignee</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </div>
@@ -388,6 +434,118 @@ qaItems.forEach(q=>{
     <td>${q.assignee}</td></tr>`;
 });
 document.querySelector('#qaTable tbody').innerHTML=qaHtml;
+
+// ===== TEST EXECUTION DATA =====
+// Issues executed through QA (last 90 days) by project
+const execByProj={SENG:68,DA:18,RHL:16,DDINDIA:10,CLN:8,CBP:3,DD:2,APEX:1,BAI:0,IMB:0,QUAL:0};
+// QA Passed (completed successfully)
+const passedByProj={SENG:52,DA:14,RHL:12,DDINDIA:8,CLN:6,CBP:3,DD:2,APEX:1,BAI:0,IMB:0,QUAL:0};
+// QA Rejected (sent back to dev)
+const rejectedByProj={SENG:16,DA:4,RHL:4,DDINDIA:2,CLN:2,CBP:0,DD:0,APEX:0,BAI:0,IMB:0,QUAL:0};
+// QA throughput (last 30d vs 30-60d)
+const exec30d={SENG:25,DA:8,RHL:5,DDINDIA:4,CLN:4,CBP:1,DD:1,APEX:0,BAI:0,IMB:0,QUAL:0};
+const exec60d={SENG:20,DA:6,RHL:6,DDINDIA:3,CLN:2,CBP:1,DD:0,APEX:0,BAI:0,IMB:0,QUAL:0};
+// Currently in QA by project
+const currentQA={SENG:19,DA:9,DDINDIA:6,RHL:4,CLN:2,CBP:0,DD:0,APEX:0,BAI:0,IMB:0,QUAL:0};
+// Execution by priority
+const execByPrio={P0:8,P1:32,P2:46,P3:34,P4:6};
+// QA pipeline split
+const execPipeline={'QA In Progress':40,'Ready for QA':35};
+
+// ===== TEST EXECUTION CHARTS =====
+
+// Executed by project (bar)
+new Chart(document.getElementById('execByProjChart'),{type:'bar',data:{
+  labels:projLabels,datasets:[{label:'Issues Executed (90d)',data:projOrder.map(p=>execByProj[p]||0),backgroundColor:projClrs,borderWidth:0,borderRadius:6}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}}}});
+
+// Pass vs Reject (stacked bar)
+new Chart(document.getElementById('passRejectChart'),{type:'bar',data:{
+  labels:projLabels,
+  datasets:[
+    {label:'Passed QA',data:projOrder.map(p=>passedByProj[p]||0),backgroundColor:C.green+'cc',borderRadius:4},
+    {label:'Rejected',data:projOrder.map(p=>rejectedByProj[p]||0),backgroundColor:C.red+'cc',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+// Throughput trend (30d vs 30-60d)
+new Chart(document.getElementById('execThroughputChart'),{type:'bar',data:{
+  labels:projLabels,
+  datasets:[
+    {label:'30-60 days ago',data:projOrder.map(p=>exec60d[p]||0),backgroundColor:C.blue+'80',borderRadius:4},
+    {label:'Last 30 days',data:projOrder.map(p=>exec30d[p]||0),backgroundColor:C.purple+'cc',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+// Execution by priority (horizontal bar)
+const execPrioLabels=['P0 Blocking','P1 Critical','P2 Major','P3 Minor','P4 Trivial'];
+const execPrioData=[execByPrio.P0,execByPrio.P1,execByPrio.P2,execByPrio.P3,execByPrio.P4];
+const execPrioColors=[C.red+'cc',C.orange+'cc',C.yellow+'cc','#94a3b8aa','#64748baa'];
+new Chart(document.getElementById('execByPrioChart'),{type:'bar',data:{
+  labels:execPrioLabels,datasets:[{label:'Issues Executed',data:execPrioData,backgroundColor:execPrioColors,borderWidth:0,borderRadius:6}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#1e293b30'}},y:{grid:{display:false}}}}});
+
+// Pipeline distribution (doughnut)
+new Chart(document.getElementById('execPipelineChart'),{type:'doughnut',data:{
+  labels:['QA In Progress','Ready for QA'],
+  datasets:[{data:[execPipeline['QA In Progress'],execPipeline['Ready for QA']],
+    backgroundColor:[C.purple+'cc',C.cyan+'cc'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+// ===== TEST EXECUTION TABLE =====
+const execItems=[
+  {key:'SENG-2255',proj:'SENG',summary:'BMO PLOAN: Migrate App Template to BMO Beta-Sandbox',prio:'P2 (Major)',assignee:'Omar Aldrich Aparicio'},
+  {key:'SENG-2224',proj:'SENG',summary:'Citizens CC: Sending Invalid channel to Accertify',prio:'P3 (Minor)',assignee:'Fernando Arana Salas'},
+  {key:'SENG-2213',proj:'SENG',summary:'Landmark CU - DA, New Checking Product set-up in Beta',prio:'P2 (Major)',assignee:'Aparna Krishnappa'},
+  {key:'SENG-2205',proj:'SENG',summary:'[CitizensBank] Regression for Generate AAN for Accertify PATCH Declined Apps',prio:'P3 (Minor)',assignee:'Cesar A. Hernandez'},
+  {key:'SENG-2202',proj:'SENG',summary:'Citizens CC: Pending review Apps in pre bureau pricing call fix',prio:'P2 (Major)',assignee:'Fernando Arana Salas'},
+  {key:'SENG-2189',proj:'SENG',summary:'BCU - Remove Simply Checking (Go-live 2/28/2026)',prio:'P3 (Minor)',assignee:'Ivan Alvarez Martinez'},
+  {key:'SENG-2174',proj:'SENG',summary:'2641195 - Same Channel save and resume - BOD',prio:'P3 (Minor)',assignee:'Madhu G Ramaiah'},
+  {key:'SENG-2100',proj:'SENG',summary:'2621001 - Enroll in Direct Deposit: New UI Page',prio:'P3 (Minor)',assignee:'Sean Jeun'},
+  {key:'SENG-2097',proj:'SENG',summary:'Product Backlog Item 2536260: Same Channel save and resume - CCO',prio:'P3 (Minor)',assignee:'Madhu G Ramaiah'},
+  {key:'SENG-2085',proj:'SENG',summary:'DOD Eligibility Questions Persist after Applicant Switches Eligibility',prio:'P2 (Major)',assignee:'Madhu G Ramaiah'},
+  {key:'SENG-2072',proj:'SENG',summary:'PBI 2044812 - SS to BOD MSR save and resume',prio:'P1 (Critical)',assignee:'Madhu G Ramaiah'},
+  {key:'SENG-2010',proj:'SENG',summary:'[Citybank] Authorized users in lender side failing transform',prio:'P3 (Minor)',assignee:'Christian Gonzalez'},
+  {key:'SENG-2009',proj:'SENG',summary:'[Citybank] Authorized users fail to erase on decision change',prio:'P3 (Minor)',assignee:'Christian Gonzalez'},
+  {key:'SENG-2007',proj:'SENG',summary:'MACU-Astra flow - Inconsistent Token Authentication Required error',prio:'P2 (Major)',assignee:'Anmol Garg'},
+  {key:'SENG-1940',proj:'SENG',summary:'RCR-0067: Generate AAN for Accertify PATCH Declined Apps',prio:'P3 (Minor)',assignee:'Cesar A. Hernandez'},
+  {key:'SENG-1231',proj:'SENG',summary:'Cross-sell initial reference product Id not being preselected correctly',prio:'P1 (Critical)',assignee:'Manikanta Reddy'},
+  {key:'SENG-1120',proj:'SENG',summary:'Sunward - Add identification data in IDV request payload',prio:'P1 (Critical)',assignee:'Christian Gonzalez'},
+  {key:'SENG-1055',proj:'SENG',summary:'LFCU - Update to v12 version for Joint Application rollback testing',prio:'P1 (Critical)',assignee:'Misael Chavez Ramos'},
+  {key:'SENG-982',proj:'SENG',summary:'Frandsen - DAv11 - Funding status not updated after retry booking',prio:'P1 (Critical)',assignee:'Godwin Simon'},
+  {key:'RHL-2005',proj:'RHL',summary:'Base: Address2 for subject property not patched to lending and Encompass',prio:'P3 (Minor)',assignee:'Anthony Mazzola'},
+  {key:'RHL-1804',proj:'RHL',summary:'[PHH] Credit Consents',prio:'P3 (Minor)',assignee:'Yanyu Chen'},
+  {key:'RHL-1803',proj:'RHL',summary:'Ability to capture consent and pull hard credit prior to app export',prio:'P3 (Minor)',assignee:'Anthony Mazzola'},
+  {key:'RHL-1750',proj:'RHL',summary:'Missing Coborrower Intent to Occupy Question',prio:'P2 (Major)',assignee:'Yanyu Chen'},
+  {key:'DDINDIA-556',proj:'DDINDIA',summary:'Add support for adhoc document upload',prio:'P3 (Minor)',assignee:'Sharad Saurav'},
+  {key:'DDINDIA-482',proj:'DDINDIA',summary:'Docgen Backend - audit results and docgen workflow Part 2',prio:'P2 (Major)',assignee:'Amod Kumar'},
+  {key:'DDINDIA-367',proj:'DDINDIA',summary:'Update External W-2 Follow-Up API Contract',prio:'P3 (Minor)',assignee:'Kumar Utkarsh'},
+  {key:'DDINDIA-366',proj:'DDINDIA',summary:'Update UI and Document Naming to Use Employer Info',prio:'P3 (Minor)',assignee:'Kumar Utkarsh'},
+  {key:'DDINDIA-364',proj:'DDINDIA',summary:'Persist Employer Info in Internal Loan Request/Process',prio:'P3 (Minor)',assignee:'Kumar Utkarsh'},
+  {key:'DDINDIA-363',proj:'DDINDIA',summary:'Backward Compatibility and Validation',prio:'P3 (Minor)',assignee:'Kumar Utkarsh'},
+  {key:'DA-1633',proj:'DA',summary:'[FMB] Beneficiary information is not exposed in the payload',prio:'P2 (Major)',assignee:'Abraham Chalita'},
+  {key:'DA-1627',proj:'DA',summary:'DA v12 - Send membership emails only for credit unions',prio:'P2 (Major)',assignee:'Gabriele Giorgi'},
+  {key:'DA-1418',proj:'DA',summary:'DA V12 - minorBirthDate field is never updated',prio:'P3 (Minor)',assignee:'Richard Gau'},
+  {key:'DA-1275',proj:'DA',summary:'[LFCU] DA - Ensure membership accountType is being set',prio:'P0 (Blocking)',assignee:'Ashley Kim'},
+  {key:'DA-1157',proj:'DA',summary:'[LFCU] Member number and member details missing from app summary',prio:'P2 (Major)',assignee:'Charles Gildart'},
+  {key:'DA-1154',proj:'DA',summary:'[LFCU] physicalCardSelection array missing from counteroffer',prio:'P0 (Blocking)',assignee:'Abraham Chalita'},
+  {key:'DA-1048',proj:'DA',summary:'Teachers FCU - existing customer with required membership product flow',prio:'P1 (Critical)',assignee:'Charles Gildart'},
+  {key:'DA-961',proj:'DA',summary:'Teachers FCU - Inviting applicant to fund before submitting',prio:'P3 (Minor)',assignee:'Manikanta Reddy'},
+  {key:'DA-899',proj:'DA',summary:'Advanced Promo Code Support (support per product)',prio:'P2 (Major)',assignee:'Michael Meza'},
+  {key:'CLN-114',proj:'CLN',summary:'Community property states not handled correctly',prio:'P2 (Major)',assignee:'Kalpana Sharma'},
+  {key:'CLN-2',proj:'CLN',summary:'[BMO PL] Add support for USPS verification',prio:'P1 (Critical)',assignee:'Suyog Bhatia'},
+];
+
+let execHtml='';
+execItems.forEach(e=>{
+  execHtml+=`<tr>
+    <td><a href="https://blendlabs.atlassian.net/browse/${e.key}" target="_blank" style="color:${PC[e.proj]||C.blue};text-decoration:none;font-weight:600">${e.key}</a></td>
+    <td style="color:${PC[e.proj]||C.blue};font-weight:600">${e.proj}</td>
+    <td style="white-space:normal;max-width:400px">${e.summary}</td>
+    <td><span class="badge ${pb(e.prio)}">${e.prio.split(' ')[0]}</span></td>
+    <td>${e.assignee}</td></tr>`;
+});
+document.querySelector('#execTable tbody').innerHTML=execHtml;
 
 const now=new Date().toLocaleString();
 document.getElementById('ts').textContent=now;
