@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Board - Cross-Project 2026 | Blend Engineering</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1600px;margin:0 auto;padding:24px 28px 48px}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #1e293b}
+header .title h1{font-size:1.75rem;background:linear-gradient(135deg,#c084fc,#e879f9,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-.3px}
+header .title p{color:#64748b;font-size:.88rem;margin-top:4px}
+header .meta{text-align:right;font-size:.78rem;color:#475569}
+header .meta .live{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+.home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#94a3b8;font-size:.8rem;font-weight:600;padding:6px 16px;border:1px solid rgba(192,132,252,.2);border-radius:8px;margin-bottom:10px;transition:all .15s}
+.home-btn:hover{background:rgba(192,132,252,.15);color:#e9d5ff}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.jql-bar{background:linear-gradient(135deg,#111827,#1a1035);border:1px solid rgba(192,132,252,.2);border-radius:12px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.jql-bar .label{font-size:.72rem;color:#a78bfa;text-transform:uppercase;letter-spacing:.5px;font-weight:700;white-space:nowrap}
+.jql-bar code{font-family:'SF Mono',Consolas,monospace;font-size:.82rem;color:#e9d5ff;background:rgba(192,132,252,.08);padding:4px 10px;border-radius:6px;flex:1;overflow-x:auto;white-space:nowrap}
+
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+.kpi{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.purple::before{background:linear-gradient(90deg,#c084fc,#a78bfa)}
+.kpi.pink::before{background:linear-gradient(90deg,#e879f9,#f0abfc)}
+.kpi.blue::before{background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.kpi.green::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.orange::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.red::before{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.kpi .lbl{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:1.8rem;font-weight:800;margin:4px 0 2px}
+.kpi .sub{font-size:.72rem;color:#475569}
+
+.filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filters .filter-label{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.filter-btn{padding:6px 14px;border:1px solid #1e293b;border-radius:8px;background:#111827;color:#94a3b8;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.filter-btn:hover{border-color:rgba(192,132,252,.3);color:#e2e8f0}
+.filter-btn.active{background:rgba(192,132,252,.15);border-color:rgba(192,132,252,.4);color:#e9d5ff}
+.search-box{padding:6px 14px;border:1px solid #1e293b;border-radius:8px;background:#111827;color:#e2e8f0;font-size:.78rem;font-family:inherit;width:220px;outline:none;transition:border-color .15s}
+.search-box:focus{border-color:rgba(192,132,252,.4)}
+.search-box::placeholder{color:#475569}
+
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px;min-height:500px}
+.column{background:linear-gradient(180deg,#0f1420,#0d1118);border:1px solid #1e293b;border-radius:14px;padding:0;display:flex;flex-direction:column;min-height:400px}
+.col-header{padding:16px 16px 12px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;position:relative}
+.col-header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.col-backlog .col-header::before{background:linear-gradient(90deg,#64748b,#94a3b8)}
+.col-todo .col-header::before{background:linear-gradient(90deg,#818cf8,#a78bfa)}
+.col-progress .col-header::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.col-review .col-header::before{background:linear-gradient(90deg,#38bdf8,#22d3ee)}
+.col-done .col-header::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.col-header .col-title{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.col-backlog .col-title{color:#94a3b8}
+.col-todo .col-title{color:#a78bfa}
+.col-progress .col-title{color:#fbbf24}
+.col-review .col-title{color:#38bdf8}
+.col-done .col-title{color:#34d399}
+.col-count{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.06)}
+.col-body{padding:10px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+
+.ticket{background:linear-gradient(135deg,#111827,#151d2e);border:1px solid #1e293b;border-radius:10px;padding:14px;cursor:default;transition:all .15s;position:relative}
+.ticket:hover{border-color:rgba(192,132,252,.25);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.ticket .t-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ticket .t-key{font-size:.78rem;font-weight:700;text-decoration:none;transition:color .15s}
+.ticket .t-key:hover{text-decoration:underline}
+.ticket .t-prio{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:4px}
+.prio-p0{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.prio-p1{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.prio-p2{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.prio-p3{background:rgba(148,163,184,.12);color:#94a3b8}
+.prio-p4{background:rgba(100,116,139,.12);color:#64748b}
+.ticket .t-summary{font-size:.82rem;color:#cbd5e1;line-height:1.45;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ticket .t-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ticket .t-proj{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px}
+.ticket .t-type{font-size:.68rem;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(192,132,252,.1);color:#c084fc}
+.ticket .t-assignee{font-size:.72rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;text-align:right}
+.ticket .t-labels{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.ticket .t-label{font-size:.62rem;padding:1px 6px;border-radius:3px;background:rgba(192,132,252,.1);color:#c084fc;font-weight:600}
+.ticket .t-date{font-size:.65rem;color:#475569}
+
+.proj-imb{background:rgba(56,189,248,.12);color:#38bdf8}
+.proj-cln{background:rgba(251,191,36,.12);color:#fbbf24}
+.proj-seng{background:rgba(167,139,250,.12);color:#a78bfa}
+.proj-ddindia{background:rgba(34,211,238,.12);color:#22d3ee}
+.proj-cbp{background:rgba(251,146,60,.12);color:#fb923c}
+.proj-da{background:rgba(45,212,191,.12);color:#2dd4bf}
+.proj-rhl{background:rgba(251,113,133,.12);color:#fb7185}
+.proj-apex{background:rgba(125,211,252,.12);color:#7dd3fc}
+.proj-bai{background:rgba(129,140,248,.12);color:#818cf8}
+.proj-dd{background:rgba(52,211,153,.12);color:#34d399}
+.proj-qual{background:rgba(163,230,53,.12);color:#a3e635}
+.proj-cbd{background:rgba(240,171,252,.12);color:#f0abfc}
+.proj-cx{background:rgba(56,189,248,.12);color:#38bdf8}
+.proj-hlintg{background:rgba(52,211,153,.12);color:#34d399}
+.proj-prds{background:rgba(232,121,249,.12);color:#e879f9}
+
+.section{margin:28px 0 16px;display:flex;align-items:center;gap:12px}
+.section h2{font-size:1.15rem;font-weight:700;color:#cbd5e1}
+.section .line{flex:1;height:1px;background:linear-gradient(90deg,#334155,transparent)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:20px}
+.card h3{font-size:.92rem;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 span{font-size:1.1rem}
+canvas{display:block;max-height:320px}
+
+.tbl-wrap{overflow-x:auto;max-height:500px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#0f1420;color:#64748b;text-transform:uppercase;font-size:.72rem;letter-spacing:.5px;padding:10px 14px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:10px 14px;border-bottom:1px solid #111827}
+tr:nth-child(even) td{background:rgba(99,102,241,.02)}
+tr:hover td{background:#111827a0}
+.badge{padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:600;display:inline-block}
+
+.empty-col{display:flex;align-items:center;justify-content:center;flex:1;color:#334155;font-size:.82rem;font-style:italic;text-align:center;padding:20px}
+
+.footer{text-align:center;color:#334155;font-size:.75rem;margin-top:32px;padding:20px 0;border-top:1px solid #111827}
+
+@media(max-width:1200px){.board{grid-template-columns:repeat(3,1fr)}.kpi-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.board{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="dash">
+
+<header>
+  <div class="title">
+    <a href="index.html" class="home-btn">&#8592; Home</a>
+    <h1>Design Board &mdash; 2026</h1>
+    <p>Cross-project Kanban for all work labeled &lsquo;design&rsquo; across every space</p>
+  </div>
+  <div class="meta">
+    <div><span class="live"></span> Live JIRA Data</div>
+    <div>Blend Engineering &bull; 2026</div>
+    <div id="ts"></div>
+  </div>
+</header>
+
+<div class="jql-bar">
+  <span class="label">JQL</span>
+  <code>(labels = design OR summary ~ "design" OR summary ~ "redesign" OR summary ~ "UX" OR project = PRDS) AND created &gt;= "2026-01-01"</code>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-row" id="kpi-row">
+  <div class="kpi purple"><div class="lbl">Total Issues</div><div class="val" style="color:#c084fc" id="kpi-total">0</div><div class="sub">All design-labeled work</div></div>
+  <div class="kpi pink"><div class="lbl">Open</div><div class="val" style="color:#e879f9" id="kpi-open">0</div><div class="sub">Backlog + To Do + In Progress</div></div>
+  <div class="kpi blue"><div class="lbl">In Review</div><div class="val" style="color:#38bdf8" id="kpi-review">0</div><div class="sub">Code Review / QA</div></div>
+  <div class="kpi green"><div class="lbl">Done</div><div class="val" style="color:#34d399" id="kpi-done">0</div><div class="sub">Resolved / Closed</div></div>
+  <div class="kpi orange"><div class="lbl">Projects</div><div class="val" style="color:#fb923c" id="kpi-projects">0</div><div class="sub">Spaces contributing</div></div>
+  <div class="kpi red"><div class="lbl">High Priority</div><div class="val" style="color:#fb7185" id="kpi-hipri">0</div><div class="sub">P0 + P1 issues</div></div>
+</div>
+
+<!-- Filters -->
+<div class="filters" id="filter-bar">
+  <span class="filter-label">Project</span>
+  <button class="filter-btn active" data-filter="all" onclick="applyFilter('project','all',this)">All</button>
+  <span class="filter-label" style="margin-left:12px">Type</span>
+  <button class="filter-btn active" data-filter="all" onclick="applyFilter('type','all',this)">All</button>
+  <span class="filter-label" style="margin-left:12px">Priority</span>
+  <button class="filter-btn active" data-filter="all" onclick="applyFilter('priority','all',this)">All</button>
+  <input type="text" class="search-box" placeholder="Search issues..." id="searchBox" oninput="applySearch(this.value)">
+</div>
+
+<!-- Kanban Board -->
+<div class="board" id="kanban-board">
+  <div class="column col-backlog" id="col-backlog">
+    <div class="col-header"><span class="col-title">Backlog</span><span class="col-count" id="cnt-backlog">0</span></div>
+    <div class="col-body" id="body-backlog"><div class="empty-col">No items</div></div>
+  </div>
+  <div class="column col-todo" id="col-todo">
+    <div class="col-header"><span class="col-title">To Do</span><span class="col-count" id="cnt-todo">0</span></div>
+    <div class="col-body" id="body-todo"><div class="empty-col">No items</div></div>
+  </div>
+  <div class="column col-progress" id="col-progress">
+    <div class="col-header"><span class="col-title">In Progress</span><span class="col-count" id="cnt-progress">0</span></div>
+    <div class="col-body" id="body-progress"><div class="empty-col">No items</div></div>
+  </div>
+  <div class="column col-review" id="col-review">
+    <div class="col-header"><span class="col-title">In Review / QA</span><span class="col-count" id="cnt-review">0</span></div>
+    <div class="col-body" id="body-review"><div class="empty-col">No items</div></div>
+  </div>
+  <div class="column col-done" id="col-done">
+    <div class="col-header"><span class="col-title">Done</span><span class="col-count" id="cnt-done">0</span></div>
+    <div class="col-body" id="body-done"><div class="empty-col">No items</div></div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="section"><h2>Design Work Analytics</h2><div class="line"></div></div>
+<div class="g2">
+  <div class="card"><h3><span>&#127912;</span> Issues by Project</h3><canvas id="byProjChart" width="600" height="300"></canvas></div>
+  <div class="card"><h3><span>&#128200;</span> Status Distribution</h3><canvas id="statusChart" width="500" height="300"></canvas></div>
+</div>
+<div class="g2">
+  <div class="card"><h3><span>&#128293;</span> Priority Breakdown</h3><canvas id="prioChart" width="500" height="300"></canvas></div>
+  <div class="card"><h3><span>&#128101;</span> Issue Type Mix</h3><canvas id="typeChart" width="500" height="300"></canvas></div>
+</div>
+
+<!-- Table -->
+<div class="section"><h2>All Design Issues &mdash; Detail View</h2><div class="line"></div></div>
+<div class="card">
+  <h3><span>&#128203;</span> Full Issue List</h3>
+  <div class="tbl-wrap"><table id="issueTable">
+    <thead><tr><th>Key</th><th>Project</th><th>Type</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Updated</th></tr></thead>
+    <tbody id="issueTableBody"></tbody>
+  </table></div>
+</div>
+
+<div class="footer">Design Board &bull; Live data from JIRA (blendlabs.atlassian.net) &bull; 10 projects &bull; 45 issues &bull; 2026 &bull; <span id="footerTs"></span></div>
+</div>
+
+<script>
+// =====================================================================
+// DATA — Populated by build_design_board.py or manually
+// Each issue: {key, project, type, summary, priority, status, statusCategory, assignee, labels, updated, created}
+// statusCategory: "backlog" | "todo" | "in_progress" | "review" | "done"
+// =====================================================================
+const ISSUES = [
+  {key:"BAI-595",project:"BAI",type:"Story",summary:"Design Spec — Banner & Badge Visual Design",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 13"},
+  {key:"CBD-403",project:"CBD",type:"Story",summary:"Ability to select credit card designs",priority:"P3 (Minor)",status:"Parking Lot",statusCategory:"backlog",assignee:"Unassigned",labels:[],updated:"Jan 07"},
+  {key:"CBD-443",project:"CBD",type:"Story",summary:"Update the UX for applicants with no active loans to be product agnostic",priority:"P3 (Minor)",status:"Parking Lot",statusCategory:"backlog",assignee:"Unassigned",labels:[],updated:"Feb 06"},
+  {key:"CBD-472",project:"CBD",type:"Story",summary:"[LFCU] Design request to allow the applicant to change, edit, or add products before submission",priority:"P3 (Minor)",status:"New",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 14"},
+  {key:"CBP-13235",project:"CBP",type:"Story",summary:"Computed fields and unused fields UX indicators",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Shimrit Yacobi",labels:[],updated:"Jan 13"},
+  {key:"CBP-13242",project:"CBP",type:"Story",summary:"MCP DevTools API for Designer Workflow Automation",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Roland Nasr",labels:[],updated:"Jan 27"},
+  {key:"CBP-13425",project:"CBP",type:"Story",summary:"Validation UX Improvement",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 11"},
+  {key:"CBP-13454",project:"CBP",type:"Story",summary:"Improve automerge diff experience",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Shubham Mondal",labels:["design"],updated:"Feb 18"},
+  {key:"CX-13704",project:"CX",type:"Story",summary:"[SMART OUTREACH] Verify Employment UI/UX",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Melissa Cohen",labels:[],updated:"Jan 06"},
+  {key:"CX-13726",project:"CX",type:"Story",summary:"[Supplemental Assets] Spike: Research and Design for Automated Follow-ups on Supplemental Asset Reports",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Melissa Cohen",labels:[],updated:"Feb 04"},
+  {key:"CX-13743",project:"CX",type:"Story",summary:"[SMART OUTREACH] Lender UI design to cancel Smart Outreach orders after 48 hours",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Melissa Cohen",labels:[],updated:"Feb 06"},
+  {key:"CX-13770",project:"CX",type:"Story",summary:"Income Design Overhaul",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Melissa Cohen",labels:[],updated:"Feb 02"},
+  {key:"CX-13822",project:"CX",type:"Story",summary:"Design LO UI with new GSE Ref ID field",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Melissa Cohen",labels:[],updated:"Feb 19"},
+  {key:"DA-1482",project:"DA",type:"Story",summary:"Design promo code configuration parameters in DCS",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Michael Meza",labels:[],updated:"Jan 14"},
+  {key:"DA-1533",project:"DA",type:"Story",summary:"Broken debit card design section on the Application Summary page",priority:"P2 (Major)",status:"Done",statusCategory:"done",assignee:"Michael Meza",labels:[],updated:"Jan 29"},
+  {key:"DA-1653",project:"DA",type:"Story",summary:"Minor Designs",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Isha Padhye",labels:["design"],updated:"Feb 17"},
+  {key:"DA-1654",project:"DA",type:"Story",summary:"Minor MSR Designs",priority:"P3 (Minor)",status:"Cancelled",statusCategory:"done",assignee:"Unassigned",labels:[],updated:"Feb 13"},
+  {key:"DA-1655",project:"DA",type:"Story",summary:"Delayed Entry Program (DEP) and Emancipated Minors Designs",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Isha Padhye",labels:[],updated:"Feb 13"},
+  {key:"HLINTG-815",project:"HLINTG",type:"Story",summary:"Redesign the Encompass Subscription Retool to use the common module for Selecting Tenants",priority:"P3 (Minor)",status:"Customer-QA",statusCategory:"review",assignee:"Shantanu Sameer Vora",labels:[],updated:"Feb 11"},
+  {key:"PRDS-134",project:"PRDS",type:"Task",summary:"Create Design Jira Board",priority:"P3 (Minor)",status:"Design Complete",statusCategory:"done",assignee:"Khyati Shah",labels:["design"],updated:"Feb 17"},
+  {key:"PRDS-135",project:"PRDS",type:"Epic",summary:"Blend Design System",priority:"P3 (Minor)",status:"In-Progress",statusCategory:"in_progress",assignee:"Khyati Shah",labels:["design"],updated:"Feb 17"},
+  {key:"PRDS-136",project:"PRDS",type:"Epic",summary:"Discovery",priority:"P1 (Critical)",status:"In-Progress",statusCategory:"in_progress",assignee:"Khyati Shah",labels:["design"],updated:"Feb 17"},
+  {key:"PRDS-137",project:"PRDS",type:"Story",summary:"Design System Roadmap",priority:"P2 (Major)",status:"In-Progress",statusCategory:"in_progress",assignee:"Khyati Shah",labels:[],updated:"Feb 18"},
+  {key:"PRDS-138",project:"PRDS",type:"Task",summary:"Audit & Gap Analysis",priority:"P3 (Minor)",status:"Next Up",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 13"},
+  {key:"PRDS-139",project:"PRDS",type:"Task",summary:"Design Vision & Exploration",priority:"P3 (Minor)",status:"Next Up",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 13"},
+  {key:"PRDS-140",project:"PRDS",type:"Task",summary:"Implementation",priority:"P3 (Minor)",status:"Next Up",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 13"},
+  {key:"QUAL-10167",project:"QUAL",type:"Bug",summary:"Rank, branch and address for military pay asked in Figma but not the RHL app",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Jan 06"},
+  {key:"QUAL-10703",project:"QUAL",type:"Story",summary:"Test for DA-1533: Broken debit card design section on Application Summary page",priority:"P2 (Major)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Jan 28"},
+  {key:"QUAL-10840",project:"QUAL",type:"Story",summary:"Build login functionality from Mockup screen",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:[],updated:"Feb 09"},
+  {key:"RHL-2036",project:"RHL",type:"Story",summary:"Redesign borrower loan association page to reduce confusion around which question the borrower is answering",priority:"P2 (Major)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:["fifth-third"],updated:"Feb 19"},
+  {key:"SENG-2077",project:"SENG",type:"Story",summary:"PBI 2502056 - Redesign MSR - Validate Eligibility Success and ELG Conditions",priority:"P1 (Critical)",status:"Done",statusCategory:"done",assignee:"Godwin Simon",labels:[],updated:"Jan 28"},
+  {key:"SENG-2078",project:"SENG",type:"Story",summary:"PBI 3025743 - Redesign MSR - Non Retriable IDV Apps",priority:"P1 (Critical)",status:"Ready for QA",statusCategory:"review",assignee:"Godwin Simon",labels:[],updated:"Feb 16"},
+  {key:"SENG-2079",project:"SENG",type:"Story",summary:"PBI 2736024 - Redesign MSR - Retriable IDV Apps",priority:"P1 (Critical)",status:"Cancelled",statusCategory:"done",assignee:"Godwin Simon",labels:[],updated:"Feb 10"},
+  {key:"SENG-2091",project:"SENG",type:"Story",summary:"Redesign MSR - MSR Step Up to Security Doc Upload",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Godwin Simon",labels:[],updated:"Feb 17"},
+  {key:"SENG-2175",project:"SENG",type:"Story",summary:"Redesign MSR - IDV Milestone Completion (Happy Path)",priority:"P3 (Minor)",status:"Done",statusCategory:"done",assignee:"Godwin Simon",labels:[],updated:"Feb 10"},
+  {key:"SENG-2176",project:"SENG",type:"Story",summary:"Redesign MSR - Membership Document pre-submit",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Godwin Simon",labels:[],updated:"Feb 16"},
+  {key:"SENG-2266",project:"SENG",type:"Story",summary:"Citizens Credit Card: Redesign Product Grid Page",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Unassigned",labels:["citizens-bank-credit-card","fastfollow"],updated:"Feb 10"},
+  {key:"SENG-2392",project:"SENG",type:"Story",summary:"Redesign MSR - Debit Card page in Account and Products milestone",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Madhu G Ramaiah",labels:[],updated:"Feb 16"},
+  {key:"SENG-2393",project:"SENG",type:"Story",summary:"Redesign MSR - CUCARD page in Accounts and Products milestone",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Madhu G Ramaiah",labels:[],updated:"Feb 16"},
+  {key:"SENG-2400",project:"SENG",type:"Story",summary:"Redesign MSR - Membership Document pre-submit",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Godwin Simon",labels:[],updated:"Feb 16"},
+  {key:"SENG-2457",project:"SENG",type:"Story",summary:"Redesign MSR - MSR Step Up to Security Doc Upload - Completed",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Madhu G Ramaiah",labels:[],updated:"Feb 16"},
+  {key:"SENG-2459",project:"SENG",type:"Story",summary:"Redesign MSR Validate Eligibility Success and ELG Conditions",priority:"P3 (Minor)",status:"Ready for QA",statusCategory:"review",assignee:"Godwin Simon",labels:[],updated:"Feb 17"},
+  {key:"SENG-2491",project:"SENG",type:"Story",summary:"Redesign - Type Ahead in Drop-down Fields",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Madhu G Ramaiah",labels:[],updated:"Feb 18"},
+  {key:"SENG-2493",project:"SENG",type:"Story",summary:"Redesign MSR - Submit from Milestone Overview",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Godwin Simon",labels:[],updated:"Feb 18"},
+  {key:"SENG-2508",project:"SENG",type:"Story",summary:"Redesign MSR - Non Retriable IDV Apps part-2",priority:"P3 (Minor)",status:"To Do",statusCategory:"todo",assignee:"Godwin Simon",labels:[],updated:"Feb 19"}
+];
+/* %%ISSUE_DATA%% */
+
+// Project color map
+const PC = {
+  SENG:'#a78bfa',PRDS:'#e879f9',CX:'#38bdf8',DA:'#2dd4bf',CBP:'#fb923c',
+  CBD:'#f0abfc',BAI:'#818cf8',RHL:'#fb7185',HLINTG:'#34d399',QUAL:'#a3e635',
+  IMB:'#38bdf8',CLN:'#fbbf24',DDINDIA:'#22d3ee',APEX:'#7dd3fc',DD:'#34d399',
+  IM:'#38bdf8',DDB:'#c084fc'
+};
+const PRIO_CLS = {P0:'prio-p0',P1:'prio-p1',P2:'prio-p2',P3:'prio-p3',P4:'prio-p4'};
+
+Chart.defaults.color='#64748b';
+Chart.defaults.borderColor='#111827';
+Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size=12;
+
+let activeFilters = {project:'all', type:'all', priority:'all'};
+let searchTerm = '';
+
+function categorizeStatus(status) {
+  const s = (status||'').toLowerCase();
+  if (s.includes('backlog')) return 'backlog';
+  if (s.includes('done') || s.includes('resolved') || s.includes('closed') || s.includes('released') || s.includes('complete') || s.includes('cancelled')) return 'done';
+  if (s.includes('review') || s.includes('qa') || s.includes('testing') || s.includes('verified')) return 'review';
+  if (s.includes('progress') || s.includes('dev') || s.includes('development') || s.includes('active')) return 'in_progress';
+  if (s.includes('to do') || s.includes('todo') || s.includes('open') || s.includes('new') || s.includes('ready for dev') || s.includes('selected') || s.includes('next up')) return 'todo';
+  if (s.includes('parking') || s.includes('blocked')) return 'backlog';
+  return 'backlog';
+}
+
+function prioKey(p) {
+  const s = (p||'').toLowerCase();
+  if (s.includes('block') || s.includes('p0') || s.includes('highest')) return 'P0';
+  if (s.includes('critical') || s.includes('p1') || s.includes('high')) return 'P1';
+  if (s.includes('major') || s.includes('p2') || s.includes('medium')) return 'P2';
+  if (s.includes('minor') || s.includes('p3') || s.includes('low')) return 'P3';
+  return 'P4';
+}
+
+function projClass(p) { return 'proj-' + (p||'').toLowerCase().replace(/[^a-z]/g,''); }
+
+function filteredIssues() {
+  return ISSUES.filter(i => {
+    if (activeFilters.project !== 'all' && i.project !== activeFilters.project) return false;
+    if (activeFilters.type !== 'all' && i.type !== activeFilters.type) return false;
+    if (activeFilters.priority !== 'all' && prioKey(i.priority) !== activeFilters.priority) return false;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      if (!((i.key||'').toLowerCase().includes(q) || (i.summary||'').toLowerCase().includes(q) || (i.assignee||'').toLowerCase().includes(q))) return false;
+    }
+    return true;
+  });
+}
+
+function renderBoard() {
+  const items = filteredIssues();
+  const cols = {backlog:[], todo:[], in_progress:[], review:[], done:[]};
+
+  items.forEach(i => {
+    const cat = i.statusCategory || categorizeStatus(i.status);
+    (cols[cat] || cols.backlog).push(i);
+  });
+
+  const colMap = {backlog:'backlog', todo:'todo', in_progress:'progress', review:'review', done:'done'};
+  Object.entries(colMap).forEach(([cat, id]) => {
+    const body = document.getElementById('body-' + id);
+    const count = document.getElementById('cnt-' + id);
+    const tickets = cols[cat];
+    count.textContent = tickets.length;
+    if (tickets.length === 0) {
+      body.innerHTML = '<div class="empty-col">No items</div>';
+      return;
+    }
+    body.innerHTML = tickets.map(t => {
+      const pk = prioKey(t.priority);
+      const pc = PC[t.project] || '#94a3b8';
+      const labels = (t.labels || []).filter(l => l.toLowerCase() !== 'design');
+      return `<div class="ticket" data-key="${t.key}">
+        <div class="t-header">
+          <a class="t-key" href="https://blendlabs.atlassian.net/browse/${t.key}" target="_blank" style="color:${pc}">${t.key}</a>
+          <span class="t-prio ${PRIO_CLS[pk]||'prio-p3'}">${pk}</span>
+        </div>
+        <div class="t-summary">${t.summary}</div>
+        ${labels.length ? '<div class="t-labels">' + labels.map(l=>'<span class="t-label">'+l+'</span>').join('') + '</div>' : ''}
+        <div class="t-footer">
+          <span class="t-proj ${projClass(t.project)}">${t.project}</span>
+          <span class="t-type">${t.type||'Task'}</span>
+          <span class="t-assignee" title="${t.assignee||'Unassigned'}">${t.assignee||'Unassigned'}</span>
+        </div>
+        ${t.updated ? '<div class="t-date">Updated ' + t.updated + '</div>' : ''}
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderKPIs() {
+  const all = ISSUES;
+  const total = all.length;
+  const cats = {};
+  all.forEach(i => { const c = i.statusCategory || categorizeStatus(i.status); cats[c] = (cats[c]||0)+1; });
+  const open = (cats.backlog||0) + (cats.todo||0) + (cats.in_progress||0);
+  const review = cats.review || 0;
+  const done = cats.done || 0;
+  const projects = [...new Set(all.map(i=>i.project))].length;
+  const hipri = all.filter(i => {const p = prioKey(i.priority); return p==='P0'||p==='P1';}).length;
+
+  document.getElementById('kpi-total').textContent = total;
+  document.getElementById('kpi-open').textContent = open;
+  document.getElementById('kpi-review').textContent = review;
+  document.getElementById('kpi-done').textContent = done;
+  document.getElementById('kpi-projects').textContent = projects;
+  document.getElementById('kpi-hipri').textContent = hipri;
+}
+
+function buildFilterButtons() {
+  const bar = document.getElementById('filter-bar');
+  const projects = [...new Set(ISSUES.map(i=>i.project))].sort();
+  const types = [...new Set(ISSUES.map(i=>i.type||'Task'))].sort();
+  const prios = ['P0','P1','P2','P3','P4'].filter(p => ISSUES.some(i=>prioKey(i.priority)===p));
+
+  const projAnchor = bar.querySelectorAll('.filter-btn')[0];
+  projects.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = p;
+    btn.dataset.filter = p;
+    btn.onclick = function(){ applyFilter('project', p, this); };
+    projAnchor.parentNode.insertBefore(btn, projAnchor.nextSibling.nextSibling);
+  });
+
+  const typeAnchor = bar.querySelectorAll('[data-filter="all"]')[1];
+  types.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = t;
+    btn.dataset.filter = t;
+    btn.onclick = function(){ applyFilter('type', t, this); };
+    typeAnchor.parentNode.insertBefore(btn, typeAnchor.nextSibling);
+  });
+
+  const prioAnchor = bar.querySelectorAll('[data-filter="all"]')[2];
+  prios.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = p;
+    btn.dataset.filter = p;
+    btn.onclick = function(){ applyFilter('priority', p, this); };
+    prioAnchor.parentNode.insertBefore(btn, prioAnchor.nextSibling);
+  });
+}
+
+function applyFilter(dimension, value, btn) {
+  activeFilters[dimension] = value;
+  const group = btn.parentNode;
+  const labels = group.querySelectorAll('.filter-label');
+  let sectionBtns = [];
+  let inSection = false;
+  group.querySelectorAll('.filter-btn, .filter-label, .search-box').forEach(el => {
+    if (el.classList.contains('filter-label')) {
+      if (inSection && sectionBtns.length) {
+        if (dimension === currentDim) {
+          sectionBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+      }
+      sectionBtns = [];
+      inSection = true;
+      var currentDim = '';
+      if (el.textContent.trim() === 'Project') currentDim = 'project';
+      else if (el.textContent.trim() === 'Type') currentDim = 'type';
+      else if (el.textContent.trim() === 'Priority') currentDim = 'priority';
+    } else if (el.classList.contains('filter-btn')) {
+      sectionBtns.push(el);
+    }
+  });
+
+  const allBtns = [...group.querySelectorAll('.filter-btn')];
+  let currentGroup = '';
+  allBtns.forEach(b => {
+    const prev = b.previousElementSibling;
+    if (prev && prev.classList.contains('filter-label')) {
+      if (prev.textContent.trim() === 'Project') currentGroup = 'project';
+      else if (prev.textContent.trim() === 'Type') currentGroup = 'type';
+      else if (prev.textContent.trim() === 'Priority') currentGroup = 'priority';
+    }
+  });
+
+  let dim = '';
+  let el = btn;
+  while (el = el.previousElementSibling) {
+    if (el.classList && el.classList.contains('filter-label')) {
+      const t = el.textContent.trim();
+      if (t === 'Project') dim = 'project';
+      else if (t === 'Type') dim = 'type';
+      else if (t === 'Priority') dim = 'priority';
+      break;
+    }
+  }
+
+  let sibling = btn;
+  while (sibling = sibling.previousElementSibling) {
+    if (sibling.classList.contains('filter-label')) break;
+    if (sibling.classList.contains('filter-btn')) sibling.classList.remove('active');
+  }
+  sibling = btn;
+  while (sibling = sibling.nextElementSibling) {
+    if (sibling.classList.contains('filter-label') || sibling.classList.contains('search-box')) break;
+    if (sibling.classList.contains('filter-btn')) sibling.classList.remove('active');
+  }
+  btn.classList.add('active');
+
+  renderBoard();
+}
+
+function applySearch(val) {
+  searchTerm = val;
+  renderBoard();
+}
+
+function renderCharts() {
+  const projects = [...new Set(ISSUES.map(i=>i.project))].sort();
+  const projCounts = {};
+  projects.forEach(p => projCounts[p] = ISSUES.filter(i=>i.project===p).length);
+
+  const statusMap = {};
+  ISSUES.forEach(i => {
+    const s = i.status || 'Unknown';
+    statusMap[s] = (statusMap[s]||0) + 1;
+  });
+
+  const prioCounts = {P0:0,P1:0,P2:0,P3:0,P4:0};
+  ISSUES.forEach(i => prioCounts[prioKey(i.priority)]++);
+
+  const typeCounts = {};
+  ISSUES.forEach(i => { const t = i.type||'Task'; typeCounts[t] = (typeCounts[t]||0)+1; });
+
+  if (projects.length > 0) {
+    new Chart(document.getElementById('byProjChart'), {type:'bar', data:{
+      labels: projects,
+      datasets:[{label:'Design Issues', data:projects.map(p=>projCounts[p]||0), backgroundColor:projects.map(p=>(PC[p]||'#818cf8')+'cc'), borderWidth:0, borderRadius:6}]
+    }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:'#1e293b30'}}}}});
+  }
+
+  const statusLabels = Object.keys(statusMap);
+  const statusColors = statusLabels.map(s => {
+    const cat = categorizeStatus(s);
+    if (cat==='done') return '#34d399cc';
+    if (cat==='review') return '#38bdf8cc';
+    if (cat==='in_progress') return '#fbbf24cc';
+    if (cat==='todo') return '#a78bfacc';
+    return '#94a3b8aa';
+  });
+  if (statusLabels.length > 0) {
+    new Chart(document.getElementById('statusChart'), {type:'doughnut', data:{
+      labels: statusLabels,
+      datasets:[{data:Object.values(statusMap), backgroundColor:statusColors, borderWidth:0, hoverOffset:8}]
+    }, options:{responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{legend:{position:'bottom', labels:{padding:14, usePointStyle:true, pointStyleWidth:10, font:{size:11}}}}}});
+  }
+
+  const prioLabels = ['P0 Blocking','P1 Critical','P2 Major','P3 Minor','P4 Trivial'];
+  const prioData = [prioCounts.P0, prioCounts.P1, prioCounts.P2, prioCounts.P3, prioCounts.P4];
+  const prioColors = ['#f87171cc','#fb923ccc','#fbbf24cc','#94a3b8aa','#64748baa'];
+  new Chart(document.getElementById('prioChart'), {type:'doughnut', data:{
+    labels: prioLabels,
+    datasets:[{data:prioData, backgroundColor:prioColors, borderWidth:0, hoverOffset:8}]
+  }, options:{responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{legend:{position:'bottom', labels:{padding:14, usePointStyle:true, pointStyleWidth:10, font:{size:11}}}}}});
+
+  const typeLabels = Object.keys(typeCounts);
+  const typeColors = ['#c084fccc','#e879f9cc','#38bdf8cc','#34d399cc','#fb923ccc','#f87171cc'];
+  if (typeLabels.length > 0) {
+    new Chart(document.getElementById('typeChart'), {type:'doughnut', data:{
+      labels: typeLabels,
+      datasets:[{data:Object.values(typeCounts), backgroundColor:typeColors.slice(0,typeLabels.length), borderWidth:0, hoverOffset:8}]
+    }, options:{responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{legend:{position:'bottom', labels:{padding:14, usePointStyle:true, pointStyleWidth:10, font:{size:11}}}}}});
+  }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('issueTableBody');
+  if (ISSUES.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#475569;padding:40px;font-style:italic">No design-labeled issues found. Run build_design_board.py to populate this board from JIRA.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = ISSUES.map(i => {
+    const pk = prioKey(i.priority);
+    const pc = PC[i.project] || '#94a3b8';
+    const cat = i.statusCategory || categorizeStatus(i.status);
+    const scls = cat==='done'?'color:#34d399':cat==='review'?'color:#38bdf8':cat==='in_progress'?'color:#fbbf24':cat==='todo'?'color:#a78bfa':'color:#94a3b8';
+    return `<tr>
+      <td><a href="https://blendlabs.atlassian.net/browse/${i.key}" target="_blank" style="color:${pc};text-decoration:none;font-weight:600">${i.key}</a></td>
+      <td style="color:${pc};font-weight:600">${i.project}</td>
+      <td>${i.type||'Task'}</td>
+      <td style="white-space:normal;max-width:400px">${i.summary}</td>
+      <td><span class="badge ${PRIO_CLS[pk]||'prio-p3'}" style="padding:3px 10px;border-radius:50px">${pk}</span></td>
+      <td style="${scls};font-weight:600">${i.status}</td>
+      <td>${i.assignee||'Unassigned'}</td>
+      <td style="color:#475569;font-size:.78rem;white-space:nowrap">${i.updated||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Initialize
+renderKPIs();
+buildFilterButtons();
+renderBoard();
+renderCharts();
+renderTable();
+
+const now = new Date().toLocaleString();
+document.getElementById('ts').textContent = now;
+document.getElementById('footerTs').textContent = now;
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+.cursor/
+__pycache__/
+*.pyc
+.DS_Store
+https:/
+agent-tools/
+*.pptx

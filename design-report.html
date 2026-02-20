@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Work Report - Cross-Project 2026 | Blend Engineering</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.dash{max-width:1520px;margin:0 auto;padding:24px 28px 48px}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #1e293b}
+header .title h1{font-size:1.75rem;background:linear-gradient(135deg,#c084fc,#e879f9,#f0abfc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-.3px}
+header .title p{color:#64748b;font-size:.88rem;margin-top:4px}
+header .meta{text-align:right;font-size:.78rem;color:#475569}
+header .meta .live{display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:5px;animation:pulse 2s infinite}
+.home-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:#94a3b8;font-size:.8rem;font-weight:600;padding:6px 16px;border:1px solid rgba(192,132,252,.2);border-radius:8px;margin-bottom:10px;transition:all .15s}
+.home-btn:hover{background:rgba(192,132,252,.15);color:#e9d5ff}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+.kpi{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.purple::before{background:linear-gradient(90deg,#c084fc,#a78bfa)}
+.kpi.pink::before{background:linear-gradient(90deg,#e879f9,#f0abfc)}
+.kpi.blue::before{background:linear-gradient(90deg,#38bdf8,#818cf8)}
+.kpi.green::before{background:linear-gradient(90deg,#34d399,#22c55e)}
+.kpi.orange::before{background:linear-gradient(90deg,#fb923c,#f97316)}
+.kpi.red::before{background:linear-gradient(90deg,#fb7185,#f43f5e)}
+.kpi .lbl{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:2rem;font-weight:800;margin:4px 0 2px}
+.kpi .sub{font-size:.72rem;color:#475569}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:24px;background:#111827;border-radius:12px;padding:4px;border:1px solid #1e293b}
+.tab-btn{flex:1;padding:12px 16px;border:none;border-radius:10px;background:transparent;color:#64748b;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.tab-btn:hover{color:#94a3b8;background:rgba(192,132,252,.06)}
+.tab-btn.active{background:linear-gradient(135deg,#2d1b4e,#3b1d6e);color:#e9d5ff;box-shadow:0 2px 12px rgba(192,132,252,.15)}
+.tab-panel{display:none;animation:fadeIn .3s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.section{margin:28px 0 16px;display:flex;align-items:center;gap:12px}
+.section h2{font-size:1.15rem;font-weight:700;color:#cbd5e1}
+.section .line{flex:1;height:1px;background:linear-gradient(90deg,#334155,transparent)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:20px}
+.card{background:linear-gradient(135deg,#111827,#131c30);border:1px solid #1e293b;border-radius:14px;padding:20px}
+.card h3{font-size:.92rem;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 span{font-size:1.1rem}
+canvas{display:block;max-height:320px}
+
+.tbl-wrap{overflow-x:auto;max-height:500px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#0f1420;color:#64748b;text-transform:uppercase;font-size:.72rem;letter-spacing:.5px;padding:10px 14px;position:sticky;top:0;z-index:2;text-align:left}
+td{padding:10px 14px;border-bottom:1px solid #111827}
+tr:nth-child(even) td{background:rgba(99,102,241,.02)}
+tr:hover td{background:#111827a0}
+.badge{padding:3px 10px;border-radius:50px;font-size:.72rem;font-weight:600;display:inline-block}
+.bp0{background:rgba(248,113,113,.2);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.bp1{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
+.bp2{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.bp3{background:rgba(148,163,184,.12);color:#94a3b8}
+.bp4{background:rgba(100,116,139,.12);color:#64748b}
+.bs-todo{background:rgba(148,163,184,.15);color:#94a3b8}
+.bs-ip{background:rgba(251,191,36,.15);color:#fbbf24}
+.bs-done{background:rgba(52,211,153,.15);color:#34d399}
+.bs-blocked{background:rgba(248,113,113,.15);color:#f87171}
+.bs-qa{background:rgba(34,211,238,.15);color:#22d3ee}
+
+.alert-box{background:rgba(192,132,252,.06);border:1px solid rgba(192,132,252,.2);border-radius:14px;padding:20px;margin-bottom:20px}
+.alert-box h4{color:#c084fc;font-size:1rem;margin-bottom:10px}
+.alert-box ul{color:#94a3b8;font-size:.85rem;list-style:disc;padding-left:20px;line-height:1.8}
+.alert-box ul strong{color:#e2e8f0}
+
+.epic-card{background:linear-gradient(135deg,#111827,#151d2e);border:1px solid #1e293b;border-radius:14px;padding:18px;margin-bottom:12px}
+.epic-card .epic-title{font-size:.88rem;font-weight:700;color:#c084fc;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.epic-card .epic-title .proj-tag{font-size:.68rem;padding:2px 8px;border-radius:4px;font-weight:600}
+.epic-card .child-list{list-style:none;padding:0}
+.epic-card .child-list li{padding:8px 12px;border-bottom:1px solid rgba(30,41,59,.5);display:flex;align-items:center;gap:10px;font-size:.82rem}
+.epic-card .child-list li:last-child{border-bottom:none}
+.epic-card .child-list .ck{font-weight:700;min-width:110px;text-decoration:none;transition:color .15s}
+.epic-card .child-list .ck:hover{text-decoration:underline}
+.epic-card .child-list .cs{flex:1;color:#cbd5e1}
+.epic-card .child-list .ca{color:#64748b;font-size:.78rem;min-width:140px;text-align:right}
+
+.footer{text-align:center;color:#334155;font-size:.75rem;margin-top:32px;padding:20px 0;border-top:1px solid #111827}
+
+@media(max-width:1024px){.kpi-row{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}.tab-bar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<header>
+  <div class="title">
+    <a href="index.html" class="home-btn">&#8592; Home</a>
+    <h1>Design Work Report &mdash; Cross-Project</h1>
+    <p>All design-related work across JIRA spaces &bull; UX &bull; Redesign &bull; Figma &bull; Research &amp; Design</p>
+  </div>
+  <div class="meta">
+    <div><span class="live"></span> Live JIRA Data</div>
+    <div>Blend Engineering &bull; Feb 2026</div>
+    <div id="ts"></div>
+  </div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi purple"><div class="lbl">Total Design Issues</div><div class="val" style="color:#c084fc">45</div><div class="sub">Across 10 projects (live data)</div></div>
+  <div class="kpi pink"><div class="lbl">Open / In Progress</div><div class="val" style="color:#e879f9">26</div><div class="sub">Backlog + To Do + In Progress</div></div>
+  <div class="kpi blue"><div class="lbl">In Review / QA</div><div class="val" style="color:#38bdf8">8</div><div class="sub">Ready for QA / Code Review</div></div>
+  <div class="kpi green"><div class="lbl">Done</div><div class="val" style="color:#34d399">11</div><div class="sub">Completed + Cancelled</div></div>
+  <div class="kpi orange"><div class="lbl">Projects</div><div class="val" style="color:#fb923c">10</div><div class="sub">Spaces contributing</div></div>
+  <div class="kpi red"><div class="lbl">P1 Critical</div><div class="val" style="color:#fb7185">4</div><div class="sub">Needing attention</div></div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab('epics')">By Project Group</button>
+  <button class="tab-btn" onclick="switchTab('open')">Open Issues</button>
+  <button class="tab-btn" onclick="switchTab('assignees')">Assignees</button>
+  <button class="tab-btn" onclick="switchTab('all')">All Issues</button>
+</div>
+
+<!-- TAB: Overview -->
+<div class="tab-panel active" id="tab-overview">
+
+  <div class="alert-box">
+    <h4>Key Findings</h4>
+    <ul>
+      <li><strong>SENG (Solution Engineers)</strong> leads with 15 issues focused on the MSR (Member Service Representative) Redesign initiative &mdash; 7 in QA, 5 to do, 3 done/cancelled</li>
+      <li><strong>PRDS (Product Design)</strong> has 7 issues including the Blend Design System and Discovery initiatives &mdash; 3 actively in progress under Khyati Shah, 3 queued next up</li>
+      <li><strong>CX (Connectivity &amp; Home Equity)</strong> has 5 design items including Income Design Overhaul and Smart Outreach UI &mdash; all owned by Melissa Cohen</li>
+      <li><strong>4 P1 Critical issues</strong>: PRDS-136 (Discovery), SENG-2077 (Validate Eligibility), SENG-2078 (Non Retriable IDV), SENG-2079 (Retriable IDV &mdash; cancelled)</li>
+      <li><strong>14 issues are unassigned</strong> across CBD, CBP, BAI, QUAL, SENG, PRDS, RHL &mdash; needs resourcing</li>
+      <li><strong>8 issues in QA/Review</strong> (7 SENG MSR redesign + 1 HLINTG Retool redesign) &mdash; awaiting validation</li>
+      <li>Design work spans <strong>10 projects</strong>: SENG, PRDS, CX, DA, CBP, CBD, QUAL, BAI, RHL, HLINTG</li>
+    </ul>
+  </div>
+
+  <div class="section"><h2>Design Issues by Project</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>&#127912;</span> Issues by Project</h3><canvas id="byProjChart" width="600" height="300"></canvas></div>
+    <div class="card"><h3><span>&#128200;</span> Status Distribution</h3><canvas id="statusChart" width="500" height="300"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span>&#128293;</span> Priority Breakdown</h3><canvas id="prioChart" width="500" height="300"></canvas></div>
+    <div class="card"><h3><span>&#128202;</span> Open vs Review vs Done by Project</h3><canvas id="openDoneChart" width="600" height="300"></canvas></div>
+  </div>
+</div>
+
+<!-- TAB: By Project Group -->
+<div class="tab-panel" id="tab-epics">
+  <div class="section"><h2>Design Work by Project Group</h2><div class="line"></div></div>
+
+  <div class="epic-card">
+    <div class="epic-title">
+      <span class="proj-tag" style="background:rgba(167,139,250,.12);color:#a78bfa">SENG</span>
+      MSR (Member Service Representative) Redesign &mdash; 15 issues
+      <span class="badge bs-qa" style="margin-left:auto">7 in QA</span>
+    </div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2077" target="_blank" style="color:#a78bfa">SENG-2077</a><span class="cs">Redesign MSR - Validate Eligibility Success and ELG Conditions</span><span class="badge bs-done">Done</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2078" target="_blank" style="color:#a78bfa">SENG-2078</a><span class="cs">Redesign MSR - Non Retriable IDV Apps</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2079" target="_blank" style="color:#a78bfa">SENG-2079</a><span class="cs">Redesign MSR - Retriable IDV Apps</span><span class="badge bs-blocked">Cancelled</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2091" target="_blank" style="color:#a78bfa">SENG-2091</a><span class="cs">Redesign MSR - MSR Step Up to Security Doc Upload</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2175" target="_blank" style="color:#a78bfa">SENG-2175</a><span class="cs">Redesign MSR - IDV Milestone Completion (Happy Path)</span><span class="badge bs-done">Done</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2176" target="_blank" style="color:#a78bfa">SENG-2176</a><span class="cs">Redesign MSR - Membership Document pre-submit</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2266" target="_blank" style="color:#a78bfa">SENG-2266</a><span class="cs">Citizens Credit Card: Redesign Product Grid Page</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2392" target="_blank" style="color:#a78bfa">SENG-2392</a><span class="cs">Redesign MSR - Debit Card page</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Madhu G Ramaiah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2393" target="_blank" style="color:#a78bfa">SENG-2393</a><span class="cs">Redesign MSR - CUCARD page</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Madhu G Ramaiah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2400" target="_blank" style="color:#a78bfa">SENG-2400</a><span class="cs">Redesign MSR - Membership Document pre-submit</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2457" target="_blank" style="color:#a78bfa">SENG-2457</a><span class="cs">Redesign MSR - MSR Step Up to Security Doc Upload</span><span class="badge bs-todo">To Do</span><span class="ca">Madhu G Ramaiah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2459" target="_blank" style="color:#a78bfa">SENG-2459</a><span class="cs">Redesign MSR Validate Eligibility Success</span><span class="badge bs-qa">Ready for QA</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2491" target="_blank" style="color:#a78bfa">SENG-2491</a><span class="cs">Redesign - Type Ahead in Drop-down Fields</span><span class="badge bs-todo">To Do</span><span class="ca">Madhu G Ramaiah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2493" target="_blank" style="color:#a78bfa">SENG-2493</a><span class="cs">Redesign MSR - Submit from Milestone Overview</span><span class="badge bs-todo">To Do</span><span class="ca">Godwin Simon</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/SENG-2508" target="_blank" style="color:#a78bfa">SENG-2508</a><span class="cs">Redesign MSR - Non Retriable IDV Apps part-2</span><span class="badge bs-todo">To Do</span><span class="ca">Godwin Simon</span></li>
+    </ul>
+  </div>
+
+  <div class="epic-card">
+    <div class="epic-title">
+      <span class="proj-tag" style="background:rgba(232,121,249,.12);color:#e879f9">PRDS</span>
+      Product Design &mdash; Blend Design System &amp; Discovery &mdash; 7 issues
+      <span class="badge bs-ip" style="margin-left:auto">3 In Progress</span>
+    </div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-134" target="_blank" style="color:#e879f9">PRDS-134</a><span class="cs">Create Design Jira Board</span><span class="badge bs-done">Design Complete</span><span class="ca">Khyati Shah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-135" target="_blank" style="color:#e879f9">PRDS-135</a><span class="cs">Blend Design System</span><span class="badge bs-ip">In-Progress</span><span class="ca">Khyati Shah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-136" target="_blank" style="color:#e879f9">PRDS-136</a><span class="cs">Discovery</span><span class="badge bs-ip">In-Progress</span><span class="ca">Khyati Shah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-137" target="_blank" style="color:#e879f9">PRDS-137</a><span class="cs">Design System Roadmap</span><span class="badge bs-ip">In-Progress</span><span class="ca">Khyati Shah</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-138" target="_blank" style="color:#e879f9">PRDS-138</a><span class="cs">Audit &amp; Gap Analysis</span><span class="badge bs-todo">Next Up</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-139" target="_blank" style="color:#e879f9">PRDS-139</a><span class="cs">Design Vision &amp; Exploration</span><span class="badge bs-todo">Next Up</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/PRDS-140" target="_blank" style="color:#e879f9">PRDS-140</a><span class="cs">Implementation</span><span class="badge bs-todo">Next Up</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+    </ul>
+  </div>
+
+  <div class="epic-card">
+    <div class="epic-title">
+      <span class="proj-tag" style="background:rgba(56,189,248,.12);color:#38bdf8">CX</span>
+      Connectivity &amp; Home Equity &mdash; UI/UX Design &mdash; 5 issues
+    </div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CX-13822" target="_blank" style="color:#38bdf8">CX-13822</a><span class="cs">Design LO UI with new GSE Ref ID field</span><span class="badge bs-todo">To Do</span><span class="ca">Melissa Cohen</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CX-13770" target="_blank" style="color:#38bdf8">CX-13770</a><span class="cs">Income Design Overhaul</span><span class="badge bs-todo">To Do</span><span class="ca">Melissa Cohen</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CX-13743" target="_blank" style="color:#38bdf8">CX-13743</a><span class="cs">Lender UI design to cancel Smart Outreach orders after 48 hours</span><span class="badge bs-done">Done</span><span class="ca">Melissa Cohen</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CX-13726" target="_blank" style="color:#38bdf8">CX-13726</a><span class="cs">Research and Design for Automated Follow-ups on Supplemental Asset Reports</span><span class="badge bs-done">Done</span><span class="ca">Melissa Cohen</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CX-13704" target="_blank" style="color:#38bdf8">CX-13704</a><span class="cs">[SMART OUTREACH] Verify Employment UI/UX</span><span class="badge bs-todo">To Do</span><span class="ca">Melissa Cohen</span></li>
+    </ul>
+  </div>
+
+  <div class="epic-card">
+    <div class="epic-title">
+      <span class="proj-tag" style="background:rgba(45,212,191,.12);color:#2dd4bf">DA</span>
+      Deposit Accounts &mdash; Design Work &mdash; 5 issues
+    </div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/DA-1655" target="_blank" style="color:#2dd4bf">DA-1655</a><span class="cs">Delayed Entry Program (DEP) and Emancipated Minors Designs</span><span class="badge bs-todo">To Do</span><span class="ca">Isha Padhye</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/DA-1653" target="_blank" style="color:#2dd4bf">DA-1653</a><span class="cs">Minor Designs</span><span class="badge bs-todo">To Do</span><span class="ca">Isha Padhye</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/DA-1654" target="_blank" style="color:#2dd4bf">DA-1654</a><span class="cs">Minor MSR Designs</span><span class="badge bs-blocked">Cancelled</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/DA-1533" target="_blank" style="color:#2dd4bf">DA-1533</a><span class="cs">Broken debit card design section on Application Summary page</span><span class="badge bs-done">Done</span><span class="ca">Michael Meza</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/DA-1482" target="_blank" style="color:#2dd4bf">DA-1482</a><span class="cs">Design promo code configuration parameters in DCS</span><span class="badge bs-done">Done</span><span class="ca">Michael Meza</span></li>
+    </ul>
+  </div>
+
+  <div class="epic-card">
+    <div class="epic-title">
+      <span class="proj-tag" style="background:rgba(251,146,60,.12);color:#fb923c">CBP</span>
+      Config Platform &mdash; UX &amp; Design Tooling &mdash; 4 issues
+    </div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBP-13454" target="_blank" style="color:#fb923c">CBP-13454</a><span class="cs">Improve automerge diff experience</span><span class="badge bs-todo">To Do</span><span class="ca">Shubham Mondal</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBP-13425" target="_blank" style="color:#fb923c">CBP-13425</a><span class="cs">Validation UX Improvement</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBP-13242" target="_blank" style="color:#fb923c">CBP-13242</a><span class="cs">MCP DevTools API for Designer Workflow Automation</span><span class="badge bs-done">Done</span><span class="ca">Roland Nasr</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBP-13235" target="_blank" style="color:#fb923c">CBP-13235</a><span class="cs">Computed fields and unused fields UX indicators</span><span class="badge bs-done">Done</span><span class="ca">Shimrit Yacobi</span></li>
+    </ul>
+  </div>
+
+  <div class="section"><h2>Smaller Contributors</h2><div class="line"></div></div>
+  <div class="epic-card">
+    <div class="epic-title">Across CBD, BAI, RHL, HLINTG, QUAL</div>
+    <ul class="child-list">
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBD-472" target="_blank" style="color:#f0abfc">CBD-472</a><span class="cs">[LFCU] Design request to allow applicant to change/add products before submission</span><span class="badge bs-todo">New</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBD-443" target="_blank" style="color:#f0abfc">CBD-443</a><span class="cs">Update UX for applicants with no active loans</span><span class="badge bs-todo">Parking Lot</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/CBD-403" target="_blank" style="color:#f0abfc">CBD-403</a><span class="cs">Ability to select credit card designs</span><span class="badge bs-todo">Parking Lot</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/BAI-595" target="_blank" style="color:#818cf8">BAI-595</a><span class="cs">Design Spec &mdash; Banner &amp; Badge Visual Design</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/RHL-2036" target="_blank" style="color:#fb7185">RHL-2036</a><span class="cs">Redesign borrower loan association page to reduce confusion</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/HLINTG-815" target="_blank" style="color:#34d399">HLINTG-815</a><span class="cs">Redesign the Encompass Subscription Retool</span><span class="badge bs-qa">Customer-QA</span><span class="ca">Shantanu Sameer Vora</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/QUAL-10703" target="_blank" style="color:#a3e635">QUAL-10703</a><span class="cs">Test for broken debit card design section</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/QUAL-10167" target="_blank" style="color:#a3e635">QUAL-10167</a><span class="cs">Figma vs RHL app discrepancy (military pay fields)</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+      <li><a class="ck" href="https://blendlabs.atlassian.net/browse/QUAL-10840" target="_blank" style="color:#a3e635">QUAL-10840</a><span class="cs">Build login functionality from Mockup screen</span><span class="badge bs-todo">To Do</span><span class="ca" style="color:#f87171">Unassigned</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB: Open Issues -->
+<div class="tab-panel" id="tab-open">
+  <div class="alert-box">
+    <h4>Action Required: 26 Open Design Issues</h4>
+    <ul>
+      <li><strong>14 unassigned issues</strong> across CBD (3), PRDS (3), QUAL (3), CBP (1), BAI (1), SENG (1), RHL (1), DA (1) &mdash; need owners</li>
+      <li><strong>8 issues in QA/Review</strong> (7 SENG MSR redesign + 1 HLINTG) &mdash; awaiting validation</li>
+      <li><strong>3 P1 Critical open</strong>: PRDS-136 (Discovery, in progress) and SENG-2078 (Non Retriable IDV, in QA)</li>
+      <li><strong>3 issues in active progress</strong>: PRDS-135 (Blend Design System), PRDS-136 (Discovery), PRDS-137 (Design System Roadmap)</li>
+    </ul>
+  </div>
+
+  <div class="section"><h2>In Progress (3)</h2><div class="line"></div></div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Assignee</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/PRDS-136" target="_blank" style="color:#e879f9;text-decoration:none;font-weight:600">PRDS-136</a></td><td style="color:#e879f9;font-weight:600">PRDS</td><td>Discovery</td><td><span class="badge bp1">P1</span></td><td>Khyati Shah</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/PRDS-137" target="_blank" style="color:#e879f9;text-decoration:none;font-weight:600">PRDS-137</a></td><td style="color:#e879f9;font-weight:600">PRDS</td><td>Design System Roadmap</td><td><span class="badge bp2">P2</span></td><td>Khyati Shah</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/PRDS-135" target="_blank" style="color:#e879f9;text-decoration:none;font-weight:600">PRDS-135</a></td><td style="color:#e879f9;font-weight:600">PRDS</td><td>Blend Design System</td><td><span class="badge bp3">P3</span></td><td>Khyati Shah</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="section"><h2>In QA / Review (8)</h2><div class="line"></div></div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Assignee</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2078" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2078</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Non Retriable IDV Apps</td><td><span class="badge bp1">P1</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2091" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2091</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - MSR Step Up to Security Doc Upload</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2176" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2176</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Membership Document pre-submit</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2392" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2392</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Debit Card page</td><td><span class="badge bp3">P3</span></td><td>Madhu G Ramaiah</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2393" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2393</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - CUCARD page</td><td><span class="badge bp3">P3</span></td><td>Madhu G Ramaiah</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2400" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2400</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Membership Document pre-submit</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2459" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2459</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR Validate Eligibility Success</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/HLINTG-815" target="_blank" style="color:#34d399;text-decoration:none;font-weight:600">HLINTG-815</a></td><td style="color:#34d399;font-weight:600">HLINTG</td><td>Redesign the Encompass Subscription Retool</td><td><span class="badge bp3">P3</span></td><td>Shantanu Sameer Vora</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="section"><h2>To Do / Backlog (15)</h2><div class="line"></div></div>
+  <div class="card">
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Assignee</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/RHL-2036" target="_blank" style="color:#fb7185;text-decoration:none;font-weight:600">RHL-2036</a></td><td style="color:#fb7185;font-weight:600">RHL</td><td>Redesign borrower loan association page</td><td><span class="badge bp2">P2</span></td><td style="color:#f87171">Unassigned</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/QUAL-10703" target="_blank" style="color:#a3e635;text-decoration:none;font-weight:600">QUAL-10703</a></td><td style="color:#a3e635;font-weight:600">QUAL</td><td>Test for broken debit card design section</td><td><span class="badge bp2">P2</span></td><td style="color:#f87171">Unassigned</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CX-13822" target="_blank" style="color:#38bdf8;text-decoration:none;font-weight:600">CX-13822</a></td><td style="color:#38bdf8;font-weight:600">CX</td><td>Design LO UI with new GSE Ref ID field</td><td><span class="badge bp3">P3</span></td><td>Melissa Cohen</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CX-13770" target="_blank" style="color:#38bdf8;text-decoration:none;font-weight:600">CX-13770</a></td><td style="color:#38bdf8;font-weight:600">CX</td><td>Income Design Overhaul</td><td><span class="badge bp3">P3</span></td><td>Melissa Cohen</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CX-13704" target="_blank" style="color:#38bdf8;text-decoration:none;font-weight:600">CX-13704</a></td><td style="color:#38bdf8;font-weight:600">CX</td><td>[SMART OUTREACH] Verify Employment UI/UX</td><td><span class="badge bp3">P3</span></td><td>Melissa Cohen</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1653" target="_blank" style="color:#2dd4bf;text-decoration:none;font-weight:600">DA-1653</a></td><td style="color:#2dd4bf;font-weight:600">DA</td><td>Minor Designs</td><td><span class="badge bp3">P3</span></td><td>Isha Padhye</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/DA-1655" target="_blank" style="color:#2dd4bf;text-decoration:none;font-weight:600">DA-1655</a></td><td style="color:#2dd4bf;font-weight:600">DA</td><td>DEP and Emancipated Minors Designs</td><td><span class="badge bp3">P3</span></td><td>Isha Padhye</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13454" target="_blank" style="color:#fb923c;text-decoration:none;font-weight:600">CBP-13454</a></td><td style="color:#fb923c;font-weight:600">CBP</td><td>Improve automerge diff experience</td><td><span class="badge bp3">P3</span></td><td>Shubham Mondal</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBP-13425" target="_blank" style="color:#fb923c;text-decoration:none;font-weight:600">CBP-13425</a></td><td style="color:#fb923c;font-weight:600">CBP</td><td>Validation UX Improvement</td><td><span class="badge bp3">P3</span></td><td style="color:#f87171">Unassigned</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/CBD-472" target="_blank" style="color:#f0abfc;text-decoration:none;font-weight:600">CBD-472</a></td><td style="color:#f0abfc;font-weight:600">CBD</td><td>Design request to allow applicant to change products</td><td><span class="badge bp3">P3</span></td><td style="color:#f87171">Unassigned</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/BAI-595" target="_blank" style="color:#818cf8;text-decoration:none;font-weight:600">BAI-595</a></td><td style="color:#818cf8;font-weight:600">BAI</td><td>Design Spec &mdash; Banner &amp; Badge Visual Design</td><td><span class="badge bp3">P3</span></td><td style="color:#f87171">Unassigned</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2508" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2508</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Non Retriable IDV Apps part-2</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2493" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2493</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - Submit from Milestone Overview</td><td><span class="badge bp3">P3</span></td><td>Godwin Simon</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2491" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2491</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign - Type Ahead in Drop-down Fields</td><td><span class="badge bp3">P3</span></td><td>Madhu G Ramaiah</td></tr>
+        <tr><td><a href="https://blendlabs.atlassian.net/browse/SENG-2457" target="_blank" style="color:#a78bfa;text-decoration:none;font-weight:600">SENG-2457</a></td><td style="color:#a78bfa;font-weight:600">SENG</td><td>Redesign MSR - MSR Step Up to Security Doc Upload</td><td><span class="badge bp3">P3</span></td><td>Madhu G Ramaiah</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- TAB: Assignees -->
+<div class="tab-panel" id="tab-assignees">
+  <div class="section"><h2>Design Work by Assignee</h2><div class="line"></div></div>
+  <div class="g2">
+    <div class="card"><h3><span>&#128101;</span> Issues per Assignee</h3><canvas id="assigneeChart" width="600" height="400"></canvas></div>
+    <div class="card">
+      <h3><span>&#128203;</span> Assignee Breakdown</h3>
+      <div style="padding:12px;font-size:.88rem;line-height:2;color:#94a3b8">
+        <div><strong style="color:#a78bfa">Godwin Simon</strong> &mdash; 10 issues (SENG MSR redesign: 2 done, 5 in QA, 3 to do)</div>
+        <div><strong style="color:#e879f9">Melissa Cohen</strong> &mdash; 5 issues (CX design: 2 done, 3 to do)</div>
+        <div><strong style="color:#a78bfa">Madhu G Ramaiah</strong> &mdash; 4 issues (SENG MSR redesign: 2 in QA, 2 to do)</div>
+        <div><strong style="color:#e879f9">Khyati Shah</strong> &mdash; 4 issues (PRDS Design System: 1 done, 3 in progress)</div>
+        <div><strong style="color:#2dd4bf">Michael Meza</strong> &mdash; 2 issues (DA design: 2 done)</div>
+        <div><strong style="color:#2dd4bf">Isha Padhye</strong> &mdash; 2 issues (DA design: 2 to do)</div>
+        <div><strong style="color:#fb923c">Shimrit Yacobi</strong> &mdash; 1 issue (CBP UX, done)</div>
+        <div><strong style="color:#fb923c">Roland Nasr</strong> &mdash; 1 issue (CBP Designer API, done)</div>
+        <div><strong style="color:#fb923c">Shubham Mondal</strong> &mdash; 1 issue (CBP automerge, to do)</div>
+        <div><strong style="color:#34d399">Shantanu Sameer Vora</strong> &mdash; 1 issue (HLINTG redesign, in QA)</div>
+        <div style="margin-top:8px;color:#f87171"><strong>Unassigned</strong> &mdash; 14 issues across CBD (3), PRDS (3), QUAL (3), CBP (1), BAI (1), SENG (1), RHL (1), DA (1)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: All Issues -->
+<div class="tab-panel" id="tab-all">
+  <div class="section"><h2>Complete Design Issue List</h2><div class="line"></div></div>
+  <div class="card">
+    <h3><span>&#128203;</span> All 45 Design Issues (sorted by project)</h3>
+    <div class="tbl-wrap"><table id="allTable">
+      <thead><tr><th>Key</th><th>Project</th><th>Summary</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Updated</th></tr></thead>
+      <tbody id="allTableBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="footer">Design Work Report &bull; Live data from JIRA (blendlabs.atlassian.net) &bull; 10 projects &bull; 45 issues &bull; <span id="footerTs"></span></div>
+</div>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+  setTimeout(()=>window.dispatchEvent(new Event('resize')),50);
+}
+
+const C={red:'#f87171',orange:'#fb923c',yellow:'#fbbf24',green:'#34d399',blue:'#38bdf8',purple:'#a78bfa',cyan:'#22d3ee',rose:'#fb7185',indigo:'#818cf8',teal:'#2dd4bf',sky:'#7dd3fc',pink:'#e879f9',fuchsia:'#c084fc',lime:'#a3e635'};
+const PC={SENG:C.purple,PRDS:C.pink,CX:C.blue,DA:C.teal,CBP:C.orange,CBD:'#f0abfc',BAI:C.indigo,RHL:C.rose,HLINTG:C.green,QUAL:C.lime};
+
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='#111827';Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";Chart.defaults.font.size=12;
+
+const projOrder=['SENG','PRDS','CX','DA','CBP','CBD','QUAL','BAI','RHL','HLINTG'];
+const projCounts=[15,7,5,5,4,3,3,1,1,1];
+const projClrs=projOrder.map(p=>PC[p]);
+
+new Chart(document.getElementById('byProjChart'),{type:'bar',data:{
+  labels:projOrder,datasets:[{label:'Design Issues',data:projCounts,backgroundColor:projClrs.map(c=>c+'cc'),borderWidth:0,borderRadius:6}]
+},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#1e293b30'}}}}});
+
+new Chart(document.getElementById('statusChart'),{type:'doughnut',data:{
+  labels:['To Do / Backlog','In Progress','In QA / Review','Done','Cancelled'],
+  datasets:[{data:[23,3,8,9,2],backgroundColor:['#94a3b8aa',C.yellow+'cc',C.cyan+'cc',C.green+'cc',C.red+'88'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+new Chart(document.getElementById('prioChart'),{type:'doughnut',data:{
+  labels:['P1 Critical','P2 Major','P3 Minor'],
+  datasets:[{data:[4,4,37],backgroundColor:[C.orange+'cc',C.yellow+'cc','#94a3b8aa'],borderWidth:0,hoverOffset:8}]
+},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyleWidth:10,font:{size:11}}}}}});
+
+const openByProj= [5,6,3,3,2,3,3,1,1,0];
+const reviewByProj=[7,0,0,0,0,0,0,0,0,1];
+const doneByProj=  [3,1,2,2,2,0,0,0,0,0];
+new Chart(document.getElementById('openDoneChart'),{type:'bar',data:{
+  labels:projOrder,
+  datasets:[
+    {label:'Open',data:openByProj,backgroundColor:C.rose+'99',borderRadius:4},
+    {label:'In QA',data:reviewByProj,backgroundColor:C.cyan+'99',borderRadius:4},
+    {label:'Done',data:doneByProj,backgroundColor:C.green+'99',borderRadius:4}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:'#1e293b30'}}},plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:10,padding:14,font:{size:12}}}}}});
+
+const assignees=['Unassigned','Godwin Simon','Melissa Cohen','Madhu G R.','Khyati Shah','Michael Meza','Isha Padhye','Shimrit Y.','Roland Nasr','Shubham M.','Shantanu V.'];
+const assigneeCounts=[14,10,5,4,4,2,2,1,1,1,1];
+const assigneeClrs=['#475569',C.purple,C.blue,C.purple,C.pink,C.teal,C.teal,C.orange,C.orange,C.orange,C.green];
+new Chart(document.getElementById('assigneeChart'),{type:'bar',data:{
+  labels:assignees,datasets:[{label:'Issues',data:assigneeCounts,backgroundColor:assigneeClrs.map(c=>c+'cc'),borderWidth:0,borderRadius:6}]
+},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#1e293b30'}},y:{grid:{display:false}}}}});
+
+const issues=[
+  {key:'BAI-595',proj:'BAI',summary:'Design Spec — Banner & Badge Visual Design',prio:'P3',status:'To Do',assignee:'Unassigned',updated:'Feb 13'},
+  {key:'CBD-403',proj:'CBD',summary:'Ability to select credit card designs',prio:'P3',status:'Parking Lot',assignee:'Unassigned',updated:'Jan 07'},
+  {key:'CBD-443',proj:'CBD',summary:'Update UX for applicants with no active loans',prio:'P3',status:'Parking Lot',assignee:'Unassigned',updated:'Feb 06'},
+  {key:'CBD-472',proj:'CBD',summary:'[LFCU] Design request to allow applicant to change products',prio:'P3',status:'New',assignee:'Unassigned',updated:'Feb 14'},
+  {key:'CBP-13235',proj:'CBP',summary:'Computed fields and unused fields UX indicators',prio:'P3',status:'Done',assignee:'Shimrit Yacobi',updated:'Jan 13'},
+  {key:'CBP-13242',proj:'CBP',summary:'MCP DevTools API for Designer Workflow Automation',prio:'P3',status:'Done',assignee:'Roland Nasr',updated:'Jan 27'},
+  {key:'CBP-13425',proj:'CBP',summary:'Validation UX Improvement',prio:'P3',status:'To Do',assignee:'Unassigned',updated:'Feb 11'},
+  {key:'CBP-13454',proj:'CBP',summary:'Improve automerge diff experience',prio:'P3',status:'To Do',assignee:'Shubham Mondal',updated:'Feb 18'},
+  {key:'CX-13704',proj:'CX',summary:'[SMART OUTREACH] Verify Employment UI/UX',prio:'P3',status:'To Do',assignee:'Melissa Cohen',updated:'Jan 06'},
+  {key:'CX-13726',proj:'CX',summary:'Research and Design for Automated Follow-ups',prio:'P3',status:'Done',assignee:'Melissa Cohen',updated:'Feb 04'},
+  {key:'CX-13743',proj:'CX',summary:'Lender UI design to cancel Smart Outreach orders',prio:'P3',status:'Done',assignee:'Melissa Cohen',updated:'Feb 06'},
+  {key:'CX-13770',proj:'CX',summary:'Income Design Overhaul',prio:'P3',status:'To Do',assignee:'Melissa Cohen',updated:'Feb 02'},
+  {key:'CX-13822',proj:'CX',summary:'Design LO UI with new GSE Ref ID field',prio:'P3',status:'To Do',assignee:'Melissa Cohen',updated:'Feb 19'},
+  {key:'DA-1482',proj:'DA',summary:'Design promo code configuration parameters in DCS',prio:'P3',status:'Done',assignee:'Michael Meza',updated:'Jan 14'},
+  {key:'DA-1533',proj:'DA',summary:'Broken debit card design section on Application Summary',prio:'P2',status:'Done',assignee:'Michael Meza',updated:'Jan 29'},
+  {key:'DA-1653',proj:'DA',summary:'Minor Designs',prio:'P3',status:'To Do',assignee:'Isha Padhye',updated:'Feb 17'},
+  {key:'DA-1654',proj:'DA',summary:'Minor MSR Designs',prio:'P3',status:'Cancelled',assignee:'Unassigned',updated:'Feb 13'},
+  {key:'DA-1655',proj:'DA',summary:'Delayed Entry Program (DEP) and Emancipated Minors Designs',prio:'P3',status:'To Do',assignee:'Isha Padhye',updated:'Feb 13'},
+  {key:'HLINTG-815',proj:'HLINTG',summary:'Redesign the Encompass Subscription Retool',prio:'P3',status:'Customer-QA',assignee:'Shantanu Sameer Vora',updated:'Feb 11'},
+  {key:'PRDS-134',proj:'PRDS',summary:'Create Design Jira Board',prio:'P3',status:'Design Complete',assignee:'Khyati Shah',updated:'Feb 17'},
+  {key:'PRDS-135',proj:'PRDS',summary:'Blend Design System',prio:'P3',status:'In-Progress',assignee:'Khyati Shah',updated:'Feb 17'},
+  {key:'PRDS-136',proj:'PRDS',summary:'Discovery',prio:'P1',status:'In-Progress',assignee:'Khyati Shah',updated:'Feb 17'},
+  {key:'PRDS-137',proj:'PRDS',summary:'Design System Roadmap',prio:'P2',status:'In-Progress',assignee:'Khyati Shah',updated:'Feb 18'},
+  {key:'PRDS-138',proj:'PRDS',summary:'Audit & Gap Analysis',prio:'P3',status:'Next Up',assignee:'Unassigned',updated:'Feb 13'},
+  {key:'PRDS-139',proj:'PRDS',summary:'Design Vision & Exploration',prio:'P3',status:'Next Up',assignee:'Unassigned',updated:'Feb 13'},
+  {key:'PRDS-140',proj:'PRDS',summary:'Implementation',prio:'P3',status:'Next Up',assignee:'Unassigned',updated:'Feb 13'},
+  {key:'QUAL-10167',proj:'QUAL',summary:'Figma vs RHL app discrepancy (military pay fields)',prio:'P3',status:'To Do',assignee:'Unassigned',updated:'Jan 06'},
+  {key:'QUAL-10703',proj:'QUAL',summary:'Test for broken debit card design section',prio:'P2',status:'To Do',assignee:'Unassigned',updated:'Jan 28'},
+  {key:'QUAL-10840',proj:'QUAL',summary:'Build login functionality from Mockup screen',prio:'P3',status:'To Do',assignee:'Unassigned',updated:'Feb 09'},
+  {key:'RHL-2036',proj:'RHL',summary:'Redesign borrower loan association page',prio:'P2',status:'To Do',assignee:'Unassigned',updated:'Feb 19'},
+  {key:'SENG-2077',proj:'SENG',summary:'Redesign MSR - Validate Eligibility Success',prio:'P1',status:'Done',assignee:'Godwin Simon',updated:'Jan 28'},
+  {key:'SENG-2078',proj:'SENG',summary:'Redesign MSR - Non Retriable IDV Apps',prio:'P1',status:'Ready for QA',assignee:'Godwin Simon',updated:'Feb 16'},
+  {key:'SENG-2079',proj:'SENG',summary:'Redesign MSR - Retriable IDV Apps',prio:'P1',status:'Cancelled',assignee:'Godwin Simon',updated:'Feb 10'},
+  {key:'SENG-2091',proj:'SENG',summary:'Redesign MSR - MSR Step Up to Security Doc Upload',prio:'P3',status:'Ready for QA',assignee:'Godwin Simon',updated:'Feb 17'},
+  {key:'SENG-2175',proj:'SENG',summary:'Redesign MSR - IDV Milestone Completion (Happy Path)',prio:'P3',status:'Done',assignee:'Godwin Simon',updated:'Feb 10'},
+  {key:'SENG-2176',proj:'SENG',summary:'Redesign MSR - Membership Document pre-submit',prio:'P3',status:'Ready for QA',assignee:'Godwin Simon',updated:'Feb 16'},
+  {key:'SENG-2266',proj:'SENG',summary:'Citizens Credit Card: Redesign Product Grid Page',prio:'P3',status:'To Do',assignee:'Unassigned',updated:'Feb 10'},
+  {key:'SENG-2392',proj:'SENG',summary:'Redesign MSR - Debit Card page',prio:'P3',status:'Ready for QA',assignee:'Madhu G Ramaiah',updated:'Feb 16'},
+  {key:'SENG-2393',proj:'SENG',summary:'Redesign MSR - CUCARD page',prio:'P3',status:'Ready for QA',assignee:'Madhu G Ramaiah',updated:'Feb 16'},
+  {key:'SENG-2400',proj:'SENG',summary:'Redesign MSR - Membership Document pre-submit',prio:'P3',status:'Ready for QA',assignee:'Godwin Simon',updated:'Feb 16'},
+  {key:'SENG-2457',proj:'SENG',summary:'Redesign MSR - MSR Step Up',prio:'P3',status:'To Do',assignee:'Madhu G Ramaiah',updated:'Feb 16'},
+  {key:'SENG-2459',proj:'SENG',summary:'Redesign MSR Validate Eligibility Success',prio:'P3',status:'Ready for QA',assignee:'Godwin Simon',updated:'Feb 17'},
+  {key:'SENG-2491',proj:'SENG',summary:'Redesign - Type Ahead in Drop-down Fields',prio:'P3',status:'To Do',assignee:'Madhu G Ramaiah',updated:'Feb 18'},
+  {key:'SENG-2493',proj:'SENG',summary:'Redesign MSR - Submit from Milestone Overview',prio:'P3',status:'To Do',assignee:'Godwin Simon',updated:'Feb 18'},
+  {key:'SENG-2508',proj:'SENG',summary:'Redesign MSR - Non Retriable IDV Apps part-2',prio:'P3',status:'To Do',assignee:'Godwin Simon',updated:'Feb 19'},
+];
+
+function pb(p){if(p==='P0')return'bp0';if(p==='P1')return'bp1';if(p==='P2')return'bp2';if(p==='P3')return'bp3';return'bp4';}
+function sb(s){const l=s.toLowerCase();if(l.includes('done')||l.includes('complete'))return'bs-done';if(l.includes('progress')||l.includes('review'))return'bs-ip';if(l.includes('block')||l.includes('cancel'))return'bs-blocked';if(l.includes('qa'))return'bs-qa';return'bs-todo';}
+
+let html='';
+issues.forEach(i=>{
+  const pc=PC[i.proj]||C.blue;
+  html+=`<tr>
+    <td><a href="https://blendlabs.atlassian.net/browse/${i.key}" target="_blank" style="color:${pc};text-decoration:none;font-weight:600">${i.key}</a></td>
+    <td style="color:${pc};font-weight:600">${i.proj}</td>
+    <td style="white-space:normal;max-width:400px">${i.summary}</td>
+    <td>${i.prio?'<span class="badge '+pb(i.prio)+'">'+i.prio+'</span>':''}</td>
+    <td><span class="badge ${sb(i.status)}">${i.status}</span></td>
+    <td${i.assignee==='Unassigned'?' style="color:#f87171"':''}>${i.assignee}</td>
+    <td style="color:#475569;font-size:.78rem">${i.updated}</td></tr>`;
+});
+document.getElementById('allTableBody').innerHTML=html;
+
+const now=new Date().toLocaleString();
+document.getElementById('ts').textContent=now;
+document.getElementById('footerTs').textContent=now;
+</script>
+</body>
+</html>
